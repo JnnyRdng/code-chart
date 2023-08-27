@@ -1,0 +1,9 @@
+start;
+[make a box];
+if (i am cool) {
+  do a thing;
+} else {
+  do nothing;
+}
+
+end;
