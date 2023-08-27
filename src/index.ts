@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { Tokeniser } from './util/Tokeniser';
 
 const [, , fileDir] = process.argv;
 if (fileDir === undefined) {
@@ -8,3 +9,7 @@ if (fileDir === undefined) {
 
 const file = fs.readFileSync(`./code/${fileDir}`, { encoding: 'utf8', flag: 'r' });
 console.log(file)
+const tokeniser = new Tokeniser(file);
+tokeniser.tokenise();
+console.log(tokeniser.tokens);
+
