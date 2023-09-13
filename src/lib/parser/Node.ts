@@ -113,7 +113,7 @@ class ConditionNode extends AbstractNode {
   }
 
   getMermaid(): string {
-    return `  ${this.id}{"${this.text}"}\n`;
+    return `  ${this.id}{"${this.text}"}:::condition\n`;
   }
 
   getTerminalIds(): number[] {
@@ -121,13 +121,13 @@ class ConditionNode extends AbstractNode {
     const lastIf = this.ifBlock.getLastInstruction();
     if (lastIf instanceof ConditionNode) {
       ids.push(...lastIf.getTerminalIds());
-    } if (!(lastIf instanceof ReturnNode) && lastIf) {
+    } else if (!(lastIf instanceof ReturnNode) && lastIf) {
       ids.push(lastIf.id);
     }
     const lastElse = this.elseBlock.getLastInstruction();
     if (lastElse instanceof ConditionNode) {
       ids.push(...lastElse.getTerminalIds());
-    } if (!(lastElse instanceof ReturnNode) && lastElse) {
+    } else if (!(lastElse instanceof ReturnNode) && lastElse) {
       ids.push(lastElse.id);
     }
     return ids;
@@ -183,6 +183,7 @@ export class NodeParser {
   i: number;
   code: string;
   arrows: string;
+  classDefs: string;
   options: ParserOptions;
 
 
@@ -194,6 +195,7 @@ export class NodeParser {
     this.scope = 0;
     this.code = '';
     this.arrows = '';
+    this.classDefs = '';
     this.options = {
       trueLabel: options.trueLabel || 'True',
       falseLabel: options.falseLabel || 'False',
@@ -206,10 +208,15 @@ export class NodeParser {
     }
     this.generate(this.root);
     this.generateLabels(this.root);
+    this.addClassDefs();
+  }
+
+  addClassDefs() {
+    this.classDefs += '\nclassDef condition fill:#c3516b\n'
   }
 
   get mermaid() {
-    return this.code + this.arrows;
+    return this.code + this.arrows + this.classDefs;
   }
 
   generateLabels(root: AbstractNode): number[] {
@@ -291,9 +298,12 @@ export class NodeParser {
   parse(): AbstractNode[] {
     const nodes: AbstractNode[] = [];
     while (this.peek()) {
-      if (this.nextMatches(TokenType.STRING, TokenType.SEMI)) {
+      if (this.nextMatches(TokenType.STRING)) {
         const string = this.consume()?.value ?? '';
         this.consume();
+        if (this.nextMatches(TokenType.SEMI)) {
+          this.consume();
+        }
         const node = new ExpressionNode(string);
         nodes.push(node);
       } else if (this.nextMatches(TokenType.L_PAREN, TokenType.STRING, TokenType.R_PAREN, TokenType.SEMI)) {
@@ -339,7 +349,6 @@ export class NodeParser {
         return nodes;
       } else {
         const token = this.consume();
-        console.dir(this.tokens, { depth: null })
         throw new Error(`I don't know what to do with this ${token!.type} at ${token!.pos}`);
       }
     }
