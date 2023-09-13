@@ -3,6 +3,7 @@ import { useCodeContext } from '../store/code-context.store';
 import { Mermaid } from './Mermaid';
 import { Tokeniser } from '../lib/parser/Tokeniser';
 import { NodeParser } from '../lib/parser/Node';
+import { useDebounce } from '../hooks/useDebounce';
 import { ErrorWindow } from './ErrorWindow';
 
 
@@ -12,10 +13,11 @@ export const Viewer = () => {
   const [text, setText] = useState<string>('');
 
   const { code } = useCodeContext();
+  const debounce = useDebounce(code, 200);
 
   useEffect(() => {
     try {
-      const tokeniser = new Tokeniser(code + '\n');
+      const tokeniser = new Tokeniser(debounce);
       const parser = new NodeParser(tokeniser);
       setText(parser.mermaid);
       setError(null);
@@ -38,7 +40,7 @@ export const Viewer = () => {
     // } catch (e) {
     //   setError('Error!');
     // }
-  }, [code]);
+  }, [debounce]);
 
 
   // const lexer = new Lexer(code);
@@ -55,7 +57,7 @@ export const Viewer = () => {
       {/* {parser.error !== '' && <p>{parser.error}</p>} */}
       {/* <Mermaid key={code} chart={'flowchart TD;\n' + code} /> */}
       {/* <Mermaid key={code} chart={parsed} /> */}
-      <Mermaid key={code} chart={text} />
+      <Mermaid key={text} chart={text} />
 
     </div>
   );
