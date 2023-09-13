@@ -3,6 +3,7 @@ import { useCodeContext } from '../store/code-context.store';
 import { Mermaid } from './Mermaid';
 import { Tokeniser } from '../lib/parser/Tokeniser';
 import { NodeParser } from '../lib/parser/Node';
+import { ErrorWindow } from './ErrorWindow';
 
 
 export const Viewer = () => {
@@ -49,7 +50,7 @@ export const Viewer = () => {
 
   return (
     <div className='viewer-window'>
-      {error && <pre>{error}</pre>}
+      <ErrorWindow error={error} />
       {/* {lexer.error !== '' && lexer.error !== undefined && <p>{lexer.error.toString()}</p>} */}
       {/* {parser.error !== '' && <p>{parser.error}</p>} */}
       {/* <Mermaid key={code} chart={'flowchart TD;\n' + code} /> */}

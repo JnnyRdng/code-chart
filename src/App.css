@@ -12,7 +12,7 @@
   /* justify-content: flex-start; */
   width: 100vw;
   height: 90vh;
-  gap: 8em;
+  gap: 3em;
   border: 1px solid black;
 }
 
@@ -23,8 +23,19 @@
 }
 
 .viewer-window {
+  position: relative;
   width: 100%;
   /* min-width: 800px;
 
   max-width: 800px; */
+}
+
+.error-window {
+  position : absolute;
+  background-color: rgba(10, 10, 10, 0.75);
+  color: rgba(230, 230,230, 0.9);
+  width: 100%;
+  padding: 20px;
+  top: 0;
+  left: 0;
 }
