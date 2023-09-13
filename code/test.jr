@@ -1,9 +1,15 @@
-start;
-[make a box];
-if (i am cool) {
-  do a thing;
+(('start'));
+"makes a box";
+if ('meets condition') {
+  'do a thing';
+  'do another';
 } else {
-  do nothing;
+  'do nothing';
+  if ('more stuff') {
+    'woah dear';
+  } else {
+    'shame on you';
+    return;
+  }
 }
-
-end;
+'make waves';

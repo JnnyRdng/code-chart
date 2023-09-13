@@ -5,13 +5,26 @@ export enum TokenType {
   L_BRACKET = 'L_BRACKET',
   R_BRACE = 'R_BRACE',
   L_BRACE = 'L_BRACE',
+
+  FORWARD_SLASH = 'FORWARD_SLASH',
+  BACKWARD_SLASH = 'BACKWARD_SLASH',
+
   STRING = 'STRING',
   INT_LIT = 'INT_LIT',
-  RETURN = 'RETURN',
+
   SEMI = 'SEMI',
+
+  RETURN = 'RETURN',
+  IF = 'IF',
+  ELSE = 'ELSE',
+  WHILE = 'WHILE',
+  SWITCH = 'SWITCH',
+  ARROW = 'ARROW',
 }
 
 export interface Token {
   type: TokenType;
   value?: string;
+  pos: number;
+  len: number;
 }

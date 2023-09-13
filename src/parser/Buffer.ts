@@ -22,4 +22,12 @@ export class Buffer {
   equals(value: string): boolean {
     return this.#buf === value;
   }
+
+  hasContents(): boolean {
+    return this.length() > 0;
+  }
+
+  length(): number {
+    return this.#buf.length;
+  }
 }

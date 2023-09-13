@@ -19,7 +19,7 @@ export class Char {
     return this.char?.toLowerCase();
   }
 
-  isEof(): boolean {
+  isEoF(): boolean {
     return this.equals('•');
   }
 
@@ -35,8 +35,20 @@ export class Char {
     return this.isAlpha() || this.isNumeric();
   }
 
+  isQuote(): boolean {
+    return this.equals('"') || this.equals("'");
+  }
+
   isSpace(): boolean {
-    return this.equals(' ') || this.equals('\n') || this.equals('\t');
+    return this.equals(' ');
+  }
+
+  isNewLine(): boolean {
+    return this.equals('\n');
+  }
+
+  isWhiteSpace(): boolean {
+    return this.isSpace() || this.isNewLine() || this.equals('\t');
   }
 
   equals(value: string): boolean {
