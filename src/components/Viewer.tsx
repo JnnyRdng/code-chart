@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useCodeContext } from '../store/code-context.store';
 import { Mermaid } from './Mermaid';
 import { Tokeniser } from '../lib/parser/Tokeniser';
-import { NodeParser } from '../lib/parser/Node';
+import { NodeParser, FlowchartDirection } from '../lib/parser/Node';
 import { useDebounce } from '../hooks/useDebounce';
 import { ErrorWindow } from './ErrorWindow';
 
@@ -12,46 +12,36 @@ export const Viewer = () => {
   const [error, setError] = useState<string | null>(null);
   const [text, setText] = useState<string>('');
 
-  const { code } = useCodeContext();
+  const { code, direction, trueLabel, falseLabel, setDirection, setTrueLabel, setFalseLabel, } = useCodeContext();
   const debounce = useDebounce(code, 200);
 
   useEffect(() => {
     try {
       const tokeniser = new Tokeniser(debounce);
-      const parser = new NodeParser(tokeniser);
+      const parser = new NodeParser(tokeniser, { trueLabel, falseLabel, flowchartDirection: direction });
       setText(parser.mermaid);
       setError(null);
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (e instanceof Error) {
         setError(e.message);
       }
     }
+  }, [debounce, direction, falseLabel, trueLabel]);
 
-    // const tokeniser = new Tokeniser(code);
-    // tokeniser.tokenise();
-    // const parser = new Parser(tokeniser);
-    // parser.parse();
-    // try {
-    //   const coder = new Code(parser.root);
-    //   coder.generate();
-    //   setError('');
-    //   setText(coder.text);
-    //   console.log(coder.text)
-    // } catch (e) {
-    //   setError('Error!');
-    // }
-  }, [debounce]);
-
-
-  // const lexer = new Lexer(code);
-  // lexer.getTokens();
-  // const parser = new Parser(lexer);
-  // parser.parse();
-
-  console.log(text.replaceAll('\n', 'Z'))
 
   return (
     <div className='viewer-window'>
+      <div>
+        <input id='topdown' type='radio' value={'TD'} name='direction' onChange={e => setDirection(e.target.value as FlowchartDirection)} />
+        <label htmlFor='topdown'>Top-to-bottom</label>
+        <input id='leftright' type='radio' value={'LR'} name='direction' onChange={e => setDirection(e.target.value as FlowchartDirection)} />
+        <label htmlFor='leftright'>Left-to-right</label>
+        <label htmlFor='trueLabel'>True Label</label>
+        <input id='trueLabel' value={trueLabel} onChange={e => setTrueLabel(e.target.value)} />
+        <label htmlFor='falseLabel'>False Label</label>
+        <input id='falseLabel' value={falseLabel} onChange={e => setFalseLabel(e.target.value)} />
+
+      </div>
       <ErrorWindow error={error} />
       {/* {lexer.error !== '' && lexer.error !== undefined && <p>{lexer.error.toString()}</p>} */}
       {/* {parser.error !== '' && <p>{parser.error}</p>} */}

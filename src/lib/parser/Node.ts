@@ -52,7 +52,7 @@ abstract class AbstractNode {
   }
 }
 
-type FlowchartDirection = 'TD' | 'LR';
+export type FlowchartDirection = 'TD' | 'LR';
 class ProgramNode extends AbstractNode {
 
   constructor(direction: FlowchartDirection) {
