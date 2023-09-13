@@ -9,15 +9,6 @@
   /* margin: 0; */
 }
 
-.code-line::after {
-  content: attr(data-ln);
-  position: absolute;
-  width: 40px;
-  right: calc(100% - 25px);
-  z-index: 999;
-  overflow: visible;
-}
-
 .wrapper {
   overflow-y: auto;
   height: 100%;
