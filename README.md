@@ -4,6 +4,18 @@ Mermaid is great but readability sucks. What if we could have Mermaid but it's a
 
 Write javascript-like statements and get a Mermaid flowchart right back at you. With _incredibly_ limited functionality[^1]
 
+Future features may or may not include:
+- [ ] Else if / switch statements
+- [ ] While loop
+- [ ] An end to weird behaviour if you start putting in return; statements.
+- [ ] Nicer colours / theming
+- [ ] Exporting as svg/png
+- [ ] Exporting input text / browser-based storage
+- [ ] Syntax highlighting
+- [ ] Error messages that are actually useful
+- [ ] A UI that doesn't look like it was cobbled together in 20 minutes
+- [ ] Actual mermaids
+
 [^1]: May improve with time.
 
 ```sh
