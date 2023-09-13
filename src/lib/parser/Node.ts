@@ -1,5 +1,5 @@
 import { Token, TokenType } from "../domain/Token";
-import { Tokeniser } from "../parser/Tokeniser";
+import { Tokeniser } from "./Tokeniser";
 
 enum BoxShape {
   SQUARE = 'SQUARE',
@@ -187,6 +187,7 @@ export class NodeParser {
 
 
   constructor(tokeniser: Tokeniser, options: Partial<ParserOptions> = {}) {
+    resetId();
     this.#tokeniser = tokeniser;
     this.tokens = tokeniser.getTokens();
     this.i = 0;

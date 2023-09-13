@@ -1,0 +1,30 @@
+#root {
+  max-width: 2000px;
+  margin: 0 auto;
+  padding: 2rem;
+  /* text-align: center; */
+}
+
+.codeWrapper {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* flex-flow: row nowrap; */
+  /* justify-content: flex-start; */
+  width: 100vw;
+  height: 90vh;
+  gap: 8em;
+  border: 1px solid black;
+}
+
+.code-window {
+  /* min-width: 800px;
+  max-width: 800px; */
+  width: 100%;
+}
+
+.viewer-window {
+  width: 100%;
+  /* min-width: 800px;
+
+  max-width: 800px; */
+}

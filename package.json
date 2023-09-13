@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "dev": "ts-node-dev --respawn --clear ./src/index.ts",
-    "start": "ts-node ./src/index.ts",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "ts:build": "tsc",
+    "ts:dev": "ts-node-dev --respawn --clear ./src/index.ts",
+    "ts:start": "ts-node ./src/index.ts",
     "test": "jest --collect-coverage",
     "test:watch": "jest --watch",
     "test:watch:coverage": "test:watch -- --collect-coverage"
@@ -20,10 +23,21 @@
     "@babel/preset-typescript": "^7.22.15",
     "@types/jest": "^29.5.4",
     "@types/node": "^20.5.6",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react-swc": "^3.3.2",
     "babel-jest": "^29.6.4",
     "jest": "^29.6.4",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vite": "^4.4.9"
+  },
+  "dependencies": {
+    "mermaid": "^10.4.0",
+    "prism-react-renderer": "^2.0.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-simple-code-editor": "^0.13.1"
   }
 }

@@ -1,7 +1,7 @@
 import { Char } from "./Char";
 import { Token, TokenType } from "../domain/Token";
 import { Buffer } from './Buffer';
-import * as log from "../Log";
+import * as log from "../../Log";
 
 export class Tokeniser {
 

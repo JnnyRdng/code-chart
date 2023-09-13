@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { Tokeniser } from './parser/Tokeniser';
-import { NodeParser } from './parser/Node';
+import { Tokeniser } from './lib/parser/Tokeniser';
+import { NodeParser } from './lib/parser/Node';
 // import { TextNode } from './util/Node';
 // import { Boxer } from './util/Boxer';
 // import { ToCode } from './util/ToCode';

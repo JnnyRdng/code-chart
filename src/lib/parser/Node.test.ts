@@ -1,6 +1,6 @@
 import { Tokeniser } from "./Tokeniser";
 import { NodeParser, resetId } from "./Node";
-import * as log from '../Log';
+import * as log from '../../Log';
 
 const get = (input: string) => {
   const s = Date.now();
