@@ -1,5 +1,6 @@
 import { Tokeniser } from "./Tokeniser";
-import { NodeParser, resetId } from "./Node";
+import { resetId } from "./Node";
+import { NodeParser } from "./NodeParser";
 import * as log from '../../Log';
 
 const get = (input: string) => {

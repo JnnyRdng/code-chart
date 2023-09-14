@@ -1,5 +1,5 @@
-import React, { createContext, ReactNode, useContext, useReducer, useState } from 'react';
-import { FlowchartDirection } from '../lib/parser/Node';
+import React, { createContext, useContext, useState } from 'react';
+import { FlowchartDirection } from '../lib/domain/Parser';
 
 export interface CodeState {
   code: string;
