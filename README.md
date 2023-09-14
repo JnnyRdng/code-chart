@@ -5,6 +5,7 @@ Mermaid is great but readability sucks. What if we could have Mermaid but it's a
 Write javascript-like statements and get a Mermaid flowchart right back at you. With _incredibly_ limited functionality[^1].
 
 Future features may or may not include:
+- [ ] Tests that actually complete
 - [ ] Else if / switch statements
 - [ ] While loop
 - [ ] An end to weird behaviour if you start putting in `return;` statements.
@@ -51,7 +52,7 @@ if (i'm hungry) {
 good bye;
 ```
 <details>
-<summary>Click to see raw Mermaid</summary>
+<summary>Raw Mermaid output</summary>
 
 ```
 flowchart TD;
