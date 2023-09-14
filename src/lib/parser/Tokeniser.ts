@@ -45,7 +45,6 @@ export class Tokeniser {
         const opener = this.consume();
         while (!this.peek().equals(opener.toString()) || this.peek(-1).equals('\\')) {
           if (this.peek().isEoF()) {
-            // this.printError();
             this.throwError(`Unterminated string! Expected \`${opener}\`, got EoF`);
           }
           const c = this.consume();
@@ -62,13 +61,6 @@ export class Tokeniser {
         this.buffer.clear();
       } else if (this.peek().isWhiteSpace()) {
         this.consume();
-        // } else if (this.peek().isNumeric()) {
-        //   const pos = this.i;
-        //   while (this.peek().isNumeric()) {
-        //     this.buffer.push(this.consume());
-        //   }
-        //   this.tokens.push({ type: TokenType.INT_LIT, value: this.buffer.toString(), pos, len: this.i - pos });
-        //   this.buffer.clear();
       } else if (this.peek().equals('=')) {
         const pos = this.i;
         this.consume();
