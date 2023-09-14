@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useCodeContext } from '../store/code-context.store';
 import { Mermaid } from './Mermaid';
 import { Tokeniser } from '../lib/parser/Tokeniser';
-import { NodeParser, FlowchartDirection } from '../lib/parser/Node';
 import { useDebounce } from '../hooks/useDebounce';
 import { ErrorWindow } from './ErrorWindow';
+import { NodeParser } from '../lib/parser/NodeParser';
+import { FlowchartDirection } from '../lib/domain/Parser';
 
 
 export const Viewer = () => {
