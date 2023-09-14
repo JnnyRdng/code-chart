@@ -1,4 +1,4 @@
-import { BoxShape } from "../domain/BoxShape";
+import { BoxShape, boxShapeBracketMap } from "../domain/BoxShape";
 import { FlowchartDirection } from "../domain/Parser";
 
 
@@ -64,32 +64,16 @@ export class ExpressionNode extends AbstractNode {
   }
 
   getMermaid(): string {
-    return `  ${this.id}${this.#openBrackets()}"${this.text}"${this.#closeBrackets()}\n`;
+    const [opening, closing] = this.#getBrackets(this.shape);
+    return `  ${this.id}${opening}"${this.text}"${closing}\n`;
   }
-  #openBrackets() {
-    switch (this.shape) {
-      case BoxShape.CIRCULAR: return '((';
-      case BoxShape.CONDITION: return '{';
-      case BoxShape.ROUNDED: return '(';
-      case BoxShape.SQUARE: return '[';
-      case BoxShape.PARALLELOGRAM: return '[/';
-      case BoxShape.REVERSE_PARALLELOGRAM: return '[\\';
-      default:
-        throw new Error('Unknown BoxShape');
 
+  #getBrackets(shape: BoxShape): [string, string] {
+    const brackets = boxShapeBracketMap[shape];
+    if (!brackets) {
+      throw new Error('Unknown BoxShape');
     }
-  }
-  #closeBrackets() {
-    switch (this.shape) {
-      case BoxShape.CIRCULAR: return '))';
-      case BoxShape.CONDITION: return '}';
-      case BoxShape.ROUNDED: return ')';
-      case BoxShape.SQUARE: return ']';
-      case BoxShape.PARALLELOGRAM: return '/]';
-      case BoxShape.REVERSE_PARALLELOGRAM: return '\\]';
-      default:
-        throw new Error('Unknown BoxShape');
-    }
+    return brackets;
   }
 }
 
