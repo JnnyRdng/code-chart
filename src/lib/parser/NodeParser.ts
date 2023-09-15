@@ -36,9 +36,11 @@ export class NodeParser {
       flowchartDirection: options.flowchartDirection || 'TD',
     };
     this.root = new ProgramNode(this.options.flowchartDirection);
+  }
 
+  parse() {
     while (this.peek()) {
-      this.root.addInstructions(this.parse());
+      this.root.addInstructions(this.#parse());
     }
     this.generate(this.root);
     this.generateLabels(this.root);
@@ -110,7 +112,7 @@ export class NodeParser {
     }
   }
 
-  parse(): AbstractNode[] {
+  #parse(): AbstractNode[] {
     const nodes: AbstractNode[] = [];
     while (this.peek()) {
       if (this.nextMatches(TokenType.STRING)) {
@@ -156,7 +158,7 @@ export class NodeParser {
         return nodes;
       } else if (this.nextMatches(TokenType.IF)) {
         this.consume();
-        nodes.push(this.parseIf());
+        nodes.push(this.#parseIf());
       } else if (this.nextMatches(TokenType.RETURN, TokenType.SEMI)) {
         nodes.push(new ReturnNode());
         this.consume();
@@ -170,7 +172,7 @@ export class NodeParser {
     return nodes;
   }
 
-  parseIf(): AbstractNode {
+  #parseIf(): AbstractNode {
     if (this.peekType() !== TokenType.L_PAREN) {
       throw new Error(`Expected '(' at pos ${this.peek()?.pos}`);
     }
@@ -188,14 +190,14 @@ export class NodeParser {
     }
     this.consume();
     const conditionNode = new ConditionNode(string);
-    conditionNode.ifBlock.addInstructions(this.parse());
+    conditionNode.ifBlock.addInstructions(this.#parse());
     if (this.nextMatches(TokenType.ELSE)) {
       this.consume();
       if (!this.nextMatches(TokenType.L_BRACE)) {
         throw new Error(`Expected '{' at pos ${this.peek()?.pos}`);
       }
       this.consume();
-      conditionNode.elseBlock.addInstructions(this.parse());
+      conditionNode.elseBlock.addInstructions(this.#parse());
     }
     return conditionNode;
   }

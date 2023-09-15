@@ -19,6 +19,7 @@ console.log(tokeniser.tokens);
 console.log('done')
 
 const parser = new NodeParser(tokeniser);
+parser.parse();
 console.log(parser.mermaid);
 
 // const m = new MakeTree(tokeniser);

@@ -19,7 +19,9 @@ export const Viewer = () => {
   useEffect(() => {
     try {
       const tokeniser = new Tokeniser(debounce);
+      tokeniser.tokenise();
       const parser = new NodeParser(tokeniser, { trueLabel, falseLabel, flowchartDirection: direction });
+      parser.parse();
       setText(parser.mermaid);
       setError(null);
     } catch (e: unknown) {

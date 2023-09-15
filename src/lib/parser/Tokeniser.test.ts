@@ -2,8 +2,9 @@ import { Token, TokenType } from "../domain/Token";
 import { Tokeniser, getMatchedBracketFromTokenType } from "./Tokeniser";
 
 const getTokens = (input: string) => {
-  const t = new Tokeniser(input);
-  return t.getTokens();
+  const tokeniser = new Tokeniser(input);
+  tokeniser.tokenise();
+  return tokeniser.getTokens();
 }
 
 describe('Tokeniser tests', () => {

@@ -21,8 +21,6 @@ export class Tokeniser {
 
     this.ln = 1;
     this.col = 1;
-
-    this.tokenise();
   }
 
   getTokens() {
