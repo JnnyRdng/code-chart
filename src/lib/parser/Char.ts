@@ -48,7 +48,7 @@ export class Char {
   }
 
   isWhiteSpace(): boolean {
-    return this.isSpace() || this.isNewLine() || this.equals('\t');
+    return this.isSpace() || this.equals('\t');
   }
 
   equals(value: string): boolean {

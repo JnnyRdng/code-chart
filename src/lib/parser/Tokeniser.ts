@@ -59,6 +59,8 @@ export class Tokeniser {
         this.buffer.clear();
       } else if (this.peek().isWhiteSpace()) {
         this.consume();
+      } else if (this.peek().isNewLine()) {
+        this.consume();
       } else if (this.peek().equals('=')) {
         const pos = this.i;
         this.consume();
@@ -70,8 +72,14 @@ export class Tokeniser {
       } else if (this.peek().equals(';')) {
         this.#handleSemi();
       } else if (this.peek().equals('/')) {
-        this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
-        this.consume();
+        if (this.peek(1).equals('/')) {
+          this.consume();
+          this.consume();
+          this.#handleComment();
+        } else {
+          this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
+          this.consume();
+        }
       } else if (this.peek().equals('\\')) {
         this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.i, len: 1 });
         this.consume();
@@ -110,6 +118,18 @@ export class Tokeniser {
   #handleRParen() {
     this.tokens.push({ type: TokenType.R_PAREN, pos: this.i, len: 1 });
     this.consume();
+  }
+
+  #handleComment() {
+    while (this.peek().isWhiteSpace()) {
+      this.consume();
+    }
+    const pos = this.i;
+    while (!this.peek().isNewLine() && !this.peek().isEoF()) {
+      this.buffer.push(this.consume());
+    }
+    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos, len: this.i - pos });
+    this.buffer.clear();
   }
 
   #handleAlphaNumeric() {
@@ -188,15 +208,6 @@ export class Tokeniser {
 
 const openingBrackets: TokenType[] = [
   TokenType.L_BRACE, TokenType.L_BRACKET, TokenType.L_PAREN, TokenType.FORWARD_SLASH, TokenType.BACKWARD_SLASH,
-]
-
-const closingBrackets: TokenType[] = [
-  TokenType.R_BRACE, TokenType.R_BRACKET, TokenType.R_PAREN, TokenType.FORWARD_SLASH, TokenType.BACKWARD_SLASH,
-]
-
-const allBrackets: TokenType[] = [
-  ...openingBrackets,
-  ...closingBrackets,
 ]
 
 export const getMatchedBracketFromTokenType = (type: TokenType) => {

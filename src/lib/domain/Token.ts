@@ -8,6 +8,7 @@ export enum TokenType {
 
   FORWARD_SLASH = 'FORWARD_SLASH',
   BACKWARD_SLASH = 'BACKWARD_SLASH',
+  COMMENT = 'COMMENT',
 
   STRING = 'STRING',
   INT_LIT = 'INT_LIT',
