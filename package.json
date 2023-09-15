@@ -12,7 +12,7 @@
     "ts:start": "ts-node ./src/index.ts",
     "test": "jest --collect-coverage",
     "test:watch": "jest --watch",
-    "test:watch:coverage": "test:watch -- --collect-coverage"
+    "test:watch:coverage": "npm run test:watch -- --collect-coverage"
   },
   "keywords": [],
   "author": "",
