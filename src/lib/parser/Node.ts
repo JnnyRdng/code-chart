@@ -18,7 +18,7 @@ export abstract class AbstractNode {
 
   constructor(text: string) {
     if (this.constructor === AbstractNode) {
-      throw new Error('Cannot instantiate abstract Node');
+      throw new Error('Cannot instantiate AbstractNode');
     }
     this.id = getId();
     this.text = text;
@@ -138,5 +138,9 @@ export class ReturnNode extends AbstractNode {
 
   getMermaid(): string {
     return '';
+  }
+
+  addInstruction(node: AbstractNode): void {
+    throw new Error('Cannot add instruction to a ReturnNode');
   }
 }
