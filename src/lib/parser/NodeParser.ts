@@ -1,18 +1,13 @@
-import { ParserOptions } from '../domain/Parser';
-import { Token } from '../domain/Token';
+import { ParserOptions, ParserOptionsArgs } from '../domain/Parser';
+import { Token, TokenType } from '../domain/Token';
 import { BoxShape } from '../domain/BoxShape';
-import { ParserOptionsArgs } from '../domain/Parser';
-import { TokenType } from '../domain/Token';
 import { AbstractNode, ConditionNode, ExpressionNode, ProgramNode, ReturnNode, resetId } from './Node';
 import { Tokeniser } from './Tokeniser';
 
 export class NodeParser {
 
-  #tokeniser: Tokeniser;
   tokens: Token[];
   root: ProgramNode;
-
-  scope: number;
 
   i: number;
   code: string;
@@ -23,10 +18,8 @@ export class NodeParser {
 
   constructor(tokeniser: Tokeniser, options: ParserOptionsArgs = {}) {
     resetId();
-    this.#tokeniser = tokeniser;
     this.tokens = tokeniser.getTokens();
     this.i = 0;
-    this.scope = 0;
     this.code = '';
     this.arrows = '';
     this.classDefs = '';
@@ -34,11 +27,14 @@ export class NodeParser {
       trueLabel: options.trueLabel || 'True',
       falseLabel: options.falseLabel || 'False',
       flowchartDirection: options.flowchartDirection || 'TD',
+      theme: options.theme ?? false,
     };
     this.root = new ProgramNode(this.options.flowchartDirection);
+  }
 
+  parse() {
     while (this.peek()) {
-      this.root.addInstructions(this.parse());
+      this.root.addInstructions(this.#parse());
     }
     this.generate(this.root);
     this.generateLabels(this.root);
@@ -110,7 +106,7 @@ export class NodeParser {
     }
   }
 
-  parse(): AbstractNode[] {
+  #parse(): AbstractNode[] {
     const nodes: AbstractNode[] = [];
     while (this.peek()) {
       if (this.nextMatches(TokenType.STRING)) {
@@ -156,12 +152,27 @@ export class NodeParser {
         return nodes;
       } else if (this.nextMatches(TokenType.IF)) {
         this.consume();
-        nodes.push(this.parseIf());
+        nodes.push(this.#parseIf());
       } else if (this.nextMatches(TokenType.RETURN, TokenType.SEMI)) {
         nodes.push(new ReturnNode());
         this.consume();
         this.consume();
+        let scope = 0;
+        while(this.peek() && scope > -1) {
+          const next = this.consume();
+          if (next?.type === TokenType.L_BRACE) {
+            scope++;
+          }
+          if (next?.type === TokenType.R_BRACE) {
+            scope--;
+          }
+        }
         return nodes;
+      } else if (this.nextMatches(TokenType.COMMENT)) {
+        //TODO: would prefer to do something with comments.
+        // Maybe put them in a box next to the _next_ string? Dashed line, different formatting?
+        // Need to handle multiple consecutive comments, join them together? Might be better to do that in the tokenising stage
+        this.consume();
       } else {
         const token = this.consume();
         throw new Error(`I don't know what to do with this ${token!.type} at ${token!.pos}`);
@@ -170,7 +181,7 @@ export class NodeParser {
     return nodes;
   }
 
-  parseIf(): AbstractNode {
+  #parseIf(): AbstractNode {
     if (this.peekType() !== TokenType.L_PAREN) {
       throw new Error(`Expected '(' at pos ${this.peek()?.pos}`);
     }
@@ -188,14 +199,14 @@ export class NodeParser {
     }
     this.consume();
     const conditionNode = new ConditionNode(string);
-    conditionNode.ifBlock.addInstructions(this.parse());
+    conditionNode.ifBlock.addInstructions(this.#parse());
     if (this.nextMatches(TokenType.ELSE)) {
       this.consume();
       if (!this.nextMatches(TokenType.L_BRACE)) {
         throw new Error(`Expected '{' at pos ${this.peek()?.pos}`);
       }
       this.consume();
-      conditionNode.elseBlock.addInstructions(this.parse());
+      conditionNode.elseBlock.addInstructions(this.#parse());
     }
     return conditionNode;
   }
@@ -214,13 +225,14 @@ export class NodeParser {
   }
 
   consume() {
-    if (this.nextMatches(TokenType.L_BRACE)) {
-      this.scope++;
-    }
-    if (this.nextMatches(TokenType.R_BRACE)) {
-      this.scope--;
-    }
     this.i++;
     return this.peek(-1);
+  }
+
+  consumeIf(tokenType: TokenType) {
+    if (this.peekType() !== tokenType) {
+      throw new Error(`Expected '${tokenType}' at pos ${this.peek()?.pos ?? 'EoF'}.`);
+    }
+    return this.consume();
   }
 }
