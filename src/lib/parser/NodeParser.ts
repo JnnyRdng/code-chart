@@ -167,6 +167,11 @@ export class NodeParser {
           }
         }
         return nodes;
+      } else if (this.nextMatches(TokenType.COMMENT)) {
+        //TODO: would prefer to do something with comments.
+        // Maybe put them in a box next to the _next_ string? Dashed line, different formatting?
+        // Need to handle multiple consecutive comments, join them together? Might be better to do that in the tokenising stage
+        this.consume();
       } else {
         const token = this.consume();
         throw new Error(`I don't know what to do with this ${token!.type} at ${token!.pos}`);
