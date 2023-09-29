@@ -11,7 +11,6 @@ export enum TokenType {
   COMMENT = 'COMMENT',
 
   STRING = 'STRING',
-  INT_LIT = 'INT_LIT',
 
   SEMI = 'SEMI',
 
