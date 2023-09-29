@@ -39,6 +39,10 @@ export class Char {
     return this.equals('"') || this.equals("'");
   }
 
+  isBacktick(): boolean {
+    return this.equals('`');
+  }
+
   isSpace(): boolean {
     return this.equals(' ');
   }

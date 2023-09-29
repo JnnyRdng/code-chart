@@ -54,6 +54,18 @@ export class Tokeniser {
         this.consume();
         this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
         this.buffer.clear();
+      } else if (this.peek().isBacktick()) {
+        const pos = this.i;
+        this.buffer.push(this.consume());
+        while(!this.peek().isBacktick() || this.peek(-1).equals('\\')) {
+          if (this.peek().isEoF()) {
+            this.throwError(`Unterminated string! Expected '\`', got EoF`);
+          }
+          this.buffer.push(this.consume());
+        }
+        this.buffer.push(this.consume());
+        this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
+        this.buffer.clear();
       } else if (this.peek().isAlphaNumeric()) {
         this.#handleAlphaNumeric();
         this.buffer.clear();

@@ -416,6 +416,28 @@ describe('Tokeniser tests', () => {
       ]
       expect(actual).toStrictEqual(expected);
     });
+
+    it('parses a string with backticks', () => {
+      const actual = getTokens('`string`');
+      const expected: Token[] = [
+        { type: TokenType.STRING, value: '`string`', pos: 0, len: 8 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('ignores escaped backticks when looking for the end of the string', () => {
+      const actual = getTokens('`string\\` carries on`');
+      const expected: Token[] = [
+        { type: TokenType.STRING, value: '`string\\` carries on`', pos: 0, len: 21 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('throws an error parsing a string with unterminated backticks', () => {
+      expect(() => {
+        getTokens('`string');
+      }).toThrow("Unterminated string! Expected '`', got EoF");
+    });
   });
 
   describe('Comments', () => {
