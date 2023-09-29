@@ -27,6 +27,7 @@ export class NodeParser {
       trueLabel: options.trueLabel || 'True',
       falseLabel: options.falseLabel || 'False',
       flowchartDirection: options.flowchartDirection || 'TD',
+      theme: options.theme ?? false,
     };
     this.root = new ProgramNode(this.options.flowchartDirection);
   }
