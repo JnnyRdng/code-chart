@@ -1,7 +1,6 @@
 import { Char } from "./Char";
 import { Token, TokenType } from "../domain/Token";
 import { Buffer } from './Buffer';
-import * as log from "../../Log";
 
 export class Tokeniser {
 
@@ -92,58 +91,6 @@ export class Tokeniser {
     this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
   }
 
-  #handleForwardSlash() {
-    if (this.peek(1).equals('/')) {
-      this.consume();
-      this.consume();
-      this.#handleComment();
-    } else {
-      this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
-      this.consume();
-    }
-  }
-
-  #handleBackSlash() {
-    this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.i, len: 1 });
-    this.consume();
-  }
-
-  #handleEquals() {
-    const pos = this.i;
-    this.consume();
-    if (!this.peek().equals('>')) {
-      this.throwError("Unexpected assignment! Expected '>'");
-    }
-    this.consume();
-    this.tokens.push({ type: TokenType.ARROW, pos, len: 2 });
-  }
-
-  #handleSemi() {
-    this.tokens.push({ type: TokenType.SEMI, pos: this.i, len: 1 });
-    this.consume();
-  }
-
-  #handleLParen() {
-    this.tokens.push({ type: TokenType.L_PAREN, pos: this.i, len: 1 });
-    this.consume();
-  }
-
-  #handleRParen() {
-    this.tokens.push({ type: TokenType.R_PAREN, pos: this.i, len: 1 });
-    this.consume();
-  }
-
-  #handleComment() {
-    while (this.peek().isWhiteSpace()) {
-      this.consume();
-    }
-    const pos = this.i;
-    while (!this.peek().isNewLine() && !this.peek().isEoF()) {
-      this.buffer.push(this.consume());
-    }
-    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos, len: this.i - pos });
-  }
-
   #handleAlphaNumeric() {
     const pos = this.i;
     this.buffer.push(this.consume());
@@ -186,11 +133,54 @@ export class Tokeniser {
     this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.buffer.length() });
   }
 
+  #handleEquals() {
+    const pos = this.i;
+    this.consume();
+    if (!this.peek().equals('>')) {
+      this.throwError("Unexpected assignment! Expected '>'");
+    }
+    this.consume();
+    this.tokens.push({ type: TokenType.ARROW, pos, len: 2 });
+  }
+
+  #handleSemi() {
+    this.tokens.push({ type: TokenType.SEMI, pos: this.i, len: 1 });
+    this.consume();
+  }
+
+  #handleForwardSlash() {
+    if (this.peek(1).equals('/')) {
+      this.consume();
+      this.consume();
+      this.#handleComment();
+    } else {
+      this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
+      this.consume();
+    }
+  }
+
+  #handleBackSlash() {
+    this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.i, len: 1 });
+    this.consume();
+  }
+
   #handleBracket() {
     const char = this.consume();
     const type = getTokenTypeFromBracket(char.toString());
     this.tokens.push({ type, pos: this.i - 1, len: 1 });
   }
+
+  #handleComment() {
+    while (this.peek().isWhiteSpace()) {
+      this.consume();
+    }
+    const pos = this.i;
+    while (!this.peek().isNewLine() && !this.peek().isEoF()) {
+      this.buffer.push(this.consume());
+    }
+    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos, len: this.i - pos });
+  }
+
 
   peek(at: number = 0): Char {
     const c = this.src[this.i + at];
