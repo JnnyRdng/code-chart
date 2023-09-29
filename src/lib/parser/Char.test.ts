@@ -4,6 +4,10 @@ describe('Char tests', () => {
 
   describe('Constructor', () => {
 
+    it('temporary failing test', () => {
+      expect(1).toStrictEqual(4);
+    });
+
     it('constructs with a single character', () => {
       expect(() => new Char('a')).not.toThrowError();
     });
