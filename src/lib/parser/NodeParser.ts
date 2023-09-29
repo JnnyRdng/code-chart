@@ -1,18 +1,13 @@
-import { ParserOptions } from '../domain/Parser';
-import { Token } from '../domain/Token';
+import { ParserOptions, ParserOptionsArgs } from '../domain/Parser';
+import { Token, TokenType } from '../domain/Token';
 import { BoxShape } from '../domain/BoxShape';
-import { ParserOptionsArgs } from '../domain/Parser';
-import { TokenType } from '../domain/Token';
 import { AbstractNode, ConditionNode, ExpressionNode, ProgramNode, ReturnNode, resetId } from './Node';
 import { Tokeniser } from './Tokeniser';
 
 export class NodeParser {
 
-  #tokeniser: Tokeniser;
   tokens: Token[];
   root: ProgramNode;
-
-  scope: number;
 
   i: number;
   code: string;
@@ -23,10 +18,8 @@ export class NodeParser {
 
   constructor(tokeniser: Tokeniser, options: ParserOptionsArgs = {}) {
     resetId();
-    this.#tokeniser = tokeniser;
     this.tokens = tokeniser.getTokens();
     this.i = 0;
-    this.scope = 0;
     this.code = '';
     this.arrows = '';
     this.classDefs = '';
@@ -226,12 +219,6 @@ export class NodeParser {
   }
 
   consume() {
-    if (this.nextMatches(TokenType.L_BRACE)) {
-      this.scope++;
-    }
-    if (this.nextMatches(TokenType.R_BRACE)) {
-      this.scope--;
-    }
     this.i++;
     return this.peek(-1);
   }
