@@ -56,22 +56,8 @@ export class Tokeniser {
         this.#handleForwardSlash();
       } else if (this.peek().equals('\\')) {
         this.#handleBackSlash();
-      } else if (this.peek().equals('(')) {
-        this.#handleLParen();
-      } else if (this.peek().equals(')')) {
-        this.#handleRParen();
-      } else if (this.peek().equals('[')) {
-        this.tokens.push({ type: TokenType.L_BRACKET, pos: this.i, len: 1 });
-        this.consume();
-      } else if (this.peek().equals(']')) {
-        this.tokens.push({ type: TokenType.R_BRACKET, pos: this.i, len: 1 });
-        this.consume();
-      } else if (this.peek().equals('{')) {
-        this.tokens.push({ type: TokenType.L_BRACE, pos: this.i, len: 1 });
-        this.consume();
-      } else if (this.peek().equals('}')) {
-        this.tokens.push({ type: TokenType.R_BRACE, pos: this.i, len: 1 });
-        this.consume();
+      } else if (this.peek().isOneOf(['(', ')', '{', '}', '[', ']'])) {
+        this.#handleBracket();
       } else {
         this.consume();
       }
@@ -203,6 +189,12 @@ export class Tokeniser {
     this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.buffer.length() });
   }
 
+  #handleBracket() {
+    const char = this.consume();
+    const type = getTokenTypeFromBracket(char.toString());
+    this.tokens.push({ type, pos: this.i - 1, len: 1 });
+  }
+
   peek(at: number = 0): Char {
     const c = this.src[this.i + at];
     if (c === undefined) {
@@ -257,6 +249,25 @@ export const getMatchedBracketFromTokenType = (type: TokenType) => {
       return '/';
     case TokenType.BACKWARD_SLASH:
       return '\\';
+    default:
+      throw new Error('Unknown bracket type! Could not match.')
+  }
+}
+
+export const getTokenTypeFromBracket = (bracket: string) => {
+  switch (bracket) {
+    case '{':
+      return TokenType.L_BRACE;
+    case '}':
+      return TokenType.R_BRACE;
+    case '(':
+      return TokenType.L_PAREN;
+    case ')':
+      return TokenType.R_PAREN;
+    case '[':
+      return TokenType.L_BRACKET;
+    case ']':
+      return TokenType.R_BRACKET;
     default:
       throw new Error('Unknown bracket type! Could not match.')
   }
