@@ -235,4 +235,11 @@ export class NodeParser {
     this.i++;
     return this.peek(-1);
   }
+
+  consumeIf(tokenType: TokenType) {
+    if (this.peekType() !== tokenType) {
+      throw new Error(`Expected '${tokenType}' at pos ${this.peek()?.pos ?? 'EoF'}.`);
+    }
+    return this.consume();
+  }
 }
