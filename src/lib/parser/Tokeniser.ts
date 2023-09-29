@@ -44,10 +44,6 @@ export class Tokeniser {
         this.#handleBacktick();
       } else if (this.peek().isAlphaNumeric()) {
         this.#handleAlphaNumeric();
-      } else if (this.peek().isWhiteSpace()) {
-        this.consume();
-      } else if (this.peek().isNewLine()) {
-        this.consume();
       } else if (this.peek().equals('=')) {
         this.#handleEquals();
       } else if (this.peek().equals(';')) {
@@ -59,6 +55,7 @@ export class Tokeniser {
       } else if (this.peek().isOneOf(['(', ')', '{', '}', '[', ']'])) {
         this.#handleBracket();
       } else {
+        // Next Char is whitespace, newline, or unrecognised.
         this.consume();
       }
       this.buffer.clear();
