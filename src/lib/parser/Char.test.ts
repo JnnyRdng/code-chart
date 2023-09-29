@@ -32,7 +32,7 @@ describe('Char tests', () => {
       expect(c.toLowerCase()).toStrictEqual('a');
     });
 
-    it('isALpha is true for letters', () => {
+    it('isAlpha is true for letters', () => {
       const c = new Char('a');
       expect(c.isAlpha()).toStrictEqual(true);
     });
@@ -50,6 +50,18 @@ describe('Char tests', () => {
     it('isNumeric is true for digits', () => {
       const c = new Char('1');
       expect(c.isNumeric()).toStrictEqual(true);
+    });
+
+    it('isOneOf is false when the char value is not in the provided array', () => {
+      const array = ['a', 'b'];
+      const c = new Char('c');
+      expect(c.isOneOf(array)).toStrictEqual(false);
+    });
+
+    it('isOneOf is true when the char value is in the provided array', () => {
+      const array = ['a', 'b', 'c'];
+      const c = new Char('c');
+      expect(c.isOneOf(array)).toStrictEqual(true);
     });
   });
 });

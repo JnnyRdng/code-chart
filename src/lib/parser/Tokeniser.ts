@@ -1,7 +1,6 @@
 import { Char } from "./Char";
 import { Token, TokenType } from "../domain/Token";
 import { Buffer } from './Buffer';
-import * as log from "../../Log";
 
 export class Tokeniser {
 
@@ -38,110 +37,59 @@ export class Tokeniser {
   tokenise() {
     this.reset();
     while (!this.peek().isEoF()) {
-      if (this.peek().isQuote()) {
-        const pos = this.i;
-        const opener = this.consume();
-        while (!this.peek().equals(opener.toString()) || this.peek(-1).equals('\\')) {
-          if (this.peek().isEoF()) {
-            this.throwError(`Unterminated string! Expected \`${opener}\`, got EoF`);
-          }
-          const c = this.consume();
-          if (c.equals('\\')) {
-            continue;
-          }
-          this.buffer.push(c);
-        }
-        this.consume();
-        this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
-        this.buffer.clear();
-      } else if (this.peek().isBacktick()) {
-        const pos = this.i;
-        this.buffer.push(this.consume());
-        while(!this.peek().isBacktick() || this.peek(-1).equals('\\')) {
-          if (this.peek().isEoF()) {
-            this.throwError(`Unterminated string! Expected '\`', got EoF`);
-          }
-          this.buffer.push(this.consume());
-        }
-        this.buffer.push(this.consume());
-        this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
-        this.buffer.clear();
-      } else if (this.peek().isAlphaNumeric()) {
+      const nextChar = this.peek();
+      if (nextChar.isQuote()) {
+        this.#handleQuote();
+      } else if (nextChar.isBacktick()) {
+        this.#handleBacktick();
+      } else if (nextChar.isAlphaNumeric()) {
         this.#handleAlphaNumeric();
-        this.buffer.clear();
-      } else if (this.peek().isWhiteSpace()) {
-        this.consume();
-      } else if (this.peek().isNewLine()) {
-        this.consume();
-      } else if (this.peek().equals('=')) {
-        const pos = this.i;
-        this.consume();
-        if (!this.peek().equals('>')) {
-          this.throwError("Unexpected assignment! Expected '>'");
-        }
-        this.consume();
-        this.tokens.push({ type: TokenType.ARROW, pos, len: 2 });
-      } else if (this.peek().equals(';')) {
+      } else if (nextChar.equals('=')) {
+        this.#handleEquals();
+      } else if (nextChar.equals(';')) {
         this.#handleSemi();
-      } else if (this.peek().equals('/')) {
-        if (this.peek(1).equals('/')) {
-          this.consume();
-          this.consume();
-          this.#handleComment();
-        } else {
-          this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
-          this.consume();
-        }
-      } else if (this.peek().equals('\\')) {
-        this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.i, len: 1 });
-        this.consume();
-      } else if (this.peek().equals('(')) {
-        this.#handleLParen();
-      } else if (this.peek().equals(')')) {
-        this.#handleRParen();
-      } else if (this.peek().equals('[')) {
-        this.tokens.push({ type: TokenType.L_BRACKET, pos: this.i, len: 1 });
-        this.consume();
-      } else if (this.peek().equals(']')) {
-        this.tokens.push({ type: TokenType.R_BRACKET, pos: this.i, len: 1 });
-        this.consume();
-      } else if (this.peek().equals('{')) {
-        this.tokens.push({ type: TokenType.L_BRACE, pos: this.i, len: 1 });
-        this.consume();
-      } else if (this.peek().equals('}')) {
-        this.tokens.push({ type: TokenType.R_BRACE, pos: this.i, len: 1 });
-        this.consume();
+      } else if (nextChar.equals('/')) {
+        this.#handleForwardSlash();
+      } else if (nextChar.equals('\\')) {
+        this.#handleBackSlash();
+      } else if (nextChar.isOneOf(['(', ')', '{', '}', '[', ']'])) {
+        this.#handleBracket();
       } else {
+        // Next Char is whitespace, newline, or unrecognised.
         this.consume();
       }
+      this.buffer.clear();
     }
   }
 
-  #handleSemi() {
-    this.tokens.push({ type: TokenType.SEMI, pos: this.i, len: 1 });
-    this.consume();
-  }
-
-  #handleLParen() {
-    this.tokens.push({ type: TokenType.L_PAREN, pos: this.i, len: 1 });
-    this.consume();
-  }
-
-  #handleRParen() {
-    this.tokens.push({ type: TokenType.R_PAREN, pos: this.i, len: 1 });
-    this.consume();
-  }
-
-  #handleComment() {
-    while (this.peek().isWhiteSpace()) {
-      this.consume();
-    }
+  #handleQuote() {
     const pos = this.i;
-    while (!this.peek().isNewLine() && !this.peek().isEoF()) {
+    const opener = this.consume();
+    while (!this.peek().equals(opener.toString()) || this.peek(-1).equals('\\')) {
+      if (this.peek().isEoF()) {
+        this.throwError(`Unterminated string! Expected \`${opener}\`, got EoF`);
+      }
+      const c = this.consume();
+      if (c.equals('\\')) {
+        continue;
+      }
+      this.buffer.push(c);
+    }
+    this.consume();
+    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
+  }
+
+  #handleBacktick() {
+    const pos = this.i;
+    this.buffer.push(this.consume());
+    while (!this.peek().isBacktick() || this.peek(-1).equals('\\')) {
+      if (this.peek().isEoF()) {
+        this.throwError(`Unterminated string! Expected '\`', got EoF`);
+      }
       this.buffer.push(this.consume());
     }
-    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos, len: this.i - pos });
-    this.buffer.clear();
+    this.buffer.push(this.consume());
+    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
   }
 
   #handleAlphaNumeric() {
@@ -185,6 +133,55 @@ export class Tokeniser {
     }
     this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.buffer.length() });
   }
+
+  #handleEquals() {
+    const pos = this.i;
+    this.consume();
+    if (!this.peek().equals('>')) {
+      this.throwError("Unexpected assignment! Expected '>'");
+    }
+    this.consume();
+    this.tokens.push({ type: TokenType.ARROW, pos, len: 2 });
+  }
+
+  #handleSemi() {
+    this.tokens.push({ type: TokenType.SEMI, pos: this.i, len: 1 });
+    this.consume();
+  }
+
+  #handleForwardSlash() {
+    if (this.peek(1).equals('/')) {
+      this.consume();
+      this.consume();
+      this.#handleComment();
+    } else {
+      this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
+      this.consume();
+    }
+  }
+
+  #handleBackSlash() {
+    this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.i, len: 1 });
+    this.consume();
+  }
+
+  #handleBracket() {
+    const char = this.consume();
+    const type = getTokenTypeFromBracket(char.toString());
+    this.tokens.push({ type, pos: this.i - 1, len: 1 });
+  }
+
+  #handleComment() {
+    while (this.peek().isWhiteSpace()) {
+      this.consume();
+    }
+    const pos = this.i;
+    while (!this.peek().isNewLine() && !this.peek().isEoF()) {
+      this.buffer.push(this.consume());
+    }
+    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos, len: this.i - pos });
+  }
+
 
   peek(at: number = 0): Char {
     const c = this.src[this.i + at];
@@ -240,6 +237,25 @@ export const getMatchedBracketFromTokenType = (type: TokenType) => {
       return '/';
     case TokenType.BACKWARD_SLASH:
       return '\\';
+    default:
+      throw new Error('Unknown bracket type! Could not match.')
+  }
+}
+
+export const getTokenTypeFromBracket = (bracket: string) => {
+  switch (bracket) {
+    case '{':
+      return TokenType.L_BRACE;
+    case '}':
+      return TokenType.R_BRACE;
+    case '(':
+      return TokenType.L_PAREN;
+    case ')':
+      return TokenType.R_PAREN;
+    case '[':
+      return TokenType.L_BRACKET;
+    case ']':
+      return TokenType.R_BRACKET;
     default:
       throw new Error('Unknown bracket type! Could not match.')
   }

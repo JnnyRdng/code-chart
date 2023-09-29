@@ -1,5 +1,5 @@
 import { Token, TokenType } from "../domain/Token";
-import { Tokeniser, getMatchedBracketFromTokenType } from "./Tokeniser";
+import { Tokeniser, getMatchedBracketFromTokenType, getTokenTypeFromBracket } from "./Tokeniser";
 
 const getTokens = (input: string) => {
   const tokeniser = new Tokeniser(input);
@@ -9,42 +9,72 @@ const getTokens = (input: string) => {
 
 describe('Tokeniser tests', () => {
 
-  describe('Matching brackets', () => {
-    it('matches `)` to TokenType.L_PAREN', () => {
+  describe('Matching TokenTypes to opposing brackets', () => {
+    it('matches TokenType.L_PAREN to `)`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.L_PAREN)).toStrictEqual(')');
     });
 
-    it('matches `(` to TokenType.R_PAREN', () => {
+    it('matches TokenType.R_PAREN to `(`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.R_PAREN)).toStrictEqual('(');
     });
 
-    it('matches `]` to TokenType.L_BRACKET', () => {
+    it('matches TokenType.L_BRACKET to `]`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.L_BRACKET)).toStrictEqual(']');
     });
 
-    it('matches `[` to TokenType.R_BRACKET', () => {
+    it('matches TokenType.R_BRACKET to `[`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.R_BRACKET)).toStrictEqual('[');
     });
 
-    it('matches `}` to TokenType.L_BRACE', () => {
+    it('matches TokenType.L_BRACE to `}`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.L_BRACE)).toStrictEqual('}');
     });
 
-    it('matches `{` to TokenType.R_BRACE', () => {
+    it('matches TokenType.R_BRACE to `{`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.R_BRACE)).toStrictEqual('{');
     });
 
-    it('matches `/` to TokenType.FORWARD_SLASH', () => {
+    it('matches TokenType.FORWARD_SLASH to `/`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.FORWARD_SLASH)).toStrictEqual('/');
     });
 
-    it('matches `\\` to TokenType.BACKWARD_SLASH', () => {
+    it('matches TokenType.BACKWARD_SLASH to `\\`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.BACKWARD_SLASH)).toStrictEqual('\\');
     });
 
     it('throws error if passed a non-bracket type', () => {
       expect(() => getMatchedBracketFromTokenType(TokenType.SEMI)).toThrow('Unknown bracket type! Could not match.');
     });
+  });
+
+  describe('Matching strings that are brackets to TokenTypes', () => {
+      it('matches `(` to TokenType.L_PAREN', () => {
+        expect(getTokenTypeFromBracket('(')).toStrictEqual(TokenType.L_PAREN);
+      });
+      
+      it('matches `)` to TokenType.R_PAREN', () => {
+        expect(getTokenTypeFromBracket(')')).toStrictEqual(TokenType.R_PAREN);
+      });
+
+      it('matches `{` to TokenType.L_BRACE', () => {
+        expect(getTokenTypeFromBracket('{')).toStrictEqual(TokenType.L_BRACE);
+      });
+      
+      it('matches `}` to TokenType.R_BRACE', () => {
+        expect(getTokenTypeFromBracket('}')).toStrictEqual(TokenType.R_BRACE);
+      });
+
+      it('matches `[` to TokenType.L_BRACKET', () => {
+        expect(getTokenTypeFromBracket('[')).toStrictEqual(TokenType.L_BRACKET);
+      });
+      
+      it('matches `]` to TokenType.R_BRACKET', () => {
+        expect(getTokenTypeFromBracket(']')).toStrictEqual(TokenType.R_BRACKET);
+      });
+
+      it('throws error if passed a non-bracket string', () => {
+        expect(() => getTokenTypeFromBracket('x')).toThrow('Unknown bracket type! Could not match.');
+      });
   });
 
   describe('Tokeniser Peek and Consume', () => {
