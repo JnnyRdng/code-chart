@@ -3,7 +3,6 @@ import { Char } from "./Char";
 describe('Char tests', () => {
 
   describe('Constructor', () => {
-
     it('constructs with a single character', () => {
       expect(() => new Char('a')).not.toThrowError();
     });
