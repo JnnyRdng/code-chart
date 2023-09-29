@@ -23,9 +23,29 @@ export enum TokenType {
   ARROW = 'ARROW',
 }
 
-export interface Token {
-  type: TokenType;
-  value?: string;
+// The TokenTypes that should require a value
+type TokenTypesWithValue = [TokenType.COMMENT, TokenType.STRING,];
+
+// Generate a type that includes values from tokenTypesWithValue
+type ValueTokenType = Extract<TokenType, TokenTypesWithValue[number]>;
+
+// Generate a type that includes values not in tokenTypesWithValue
+type NonValueTokenType = Exclude<TokenType, TokenTypesWithValue[number]>;
+
+interface TokenBase {
   pos: number;
   len: number;
 }
+
+interface TokenTypeWithValue extends TokenBase {
+  type: ValueTokenType;
+  value: string;
+}
+
+interface TokenTypeWithoutValue extends TokenBase {
+  type: NonValueTokenType;
+  value?: never;
+}
+
+// The full Token type
+export type Token = TokenTypeWithValue | TokenTypeWithoutValue;
