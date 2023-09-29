@@ -37,21 +37,22 @@ export class Tokeniser {
   tokenise() {
     this.reset();
     while (!this.peek().isEoF()) {
-      if (this.peek().isQuote()) {
+      const nextChar = this.peek();
+      if (nextChar.isQuote()) {
         this.#handleQuote();
-      } else if (this.peek().isBacktick()) {
+      } else if (nextChar.isBacktick()) {
         this.#handleBacktick();
-      } else if (this.peek().isAlphaNumeric()) {
+      } else if (nextChar.isAlphaNumeric()) {
         this.#handleAlphaNumeric();
-      } else if (this.peek().equals('=')) {
+      } else if (nextChar.equals('=')) {
         this.#handleEquals();
-      } else if (this.peek().equals(';')) {
+      } else if (nextChar.equals(';')) {
         this.#handleSemi();
-      } else if (this.peek().equals('/')) {
+      } else if (nextChar.equals('/')) {
         this.#handleForwardSlash();
-      } else if (this.peek().equals('\\')) {
+      } else if (nextChar.equals('\\')) {
         this.#handleBackSlash();
-      } else if (this.peek().isOneOf(['(', ')', '{', '}', '[', ']'])) {
+      } else if (nextChar.isOneOf(['(', ')', '{', '}', '[', ']'])) {
         this.#handleBracket();
       } else {
         // Next Char is whitespace, newline, or unrecognised.
