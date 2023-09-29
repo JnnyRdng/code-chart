@@ -58,6 +58,10 @@ export class Char {
   equals(value: string): boolean {
     return this.char === value;
   }
+
+  isOneOf(valueArray: string[]): boolean {
+    return valueArray.some(value => this.equals(value));
+  }
 }
 
 
