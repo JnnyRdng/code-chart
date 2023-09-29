@@ -39,62 +39,23 @@ export class Tokeniser {
     this.reset();
     while (!this.peek().isEoF()) {
       if (this.peek().isQuote()) {
-        const pos = this.i;
-        const opener = this.consume();
-        while (!this.peek().equals(opener.toString()) || this.peek(-1).equals('\\')) {
-          if (this.peek().isEoF()) {
-            this.throwError(`Unterminated string! Expected \`${opener}\`, got EoF`);
-          }
-          const c = this.consume();
-          if (c.equals('\\')) {
-            continue;
-          }
-          this.buffer.push(c);
-        }
-        this.consume();
-        this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
-        this.buffer.clear();
+        this.#handleQuote();
       } else if (this.peek().isBacktick()) {
-        const pos = this.i;
-        this.buffer.push(this.consume());
-        while(!this.peek().isBacktick() || this.peek(-1).equals('\\')) {
-          if (this.peek().isEoF()) {
-            this.throwError(`Unterminated string! Expected '\`', got EoF`);
-          }
-          this.buffer.push(this.consume());
-        }
-        this.buffer.push(this.consume());
-        this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
-        this.buffer.clear();
+        this.#handleBacktick();
       } else if (this.peek().isAlphaNumeric()) {
         this.#handleAlphaNumeric();
-        this.buffer.clear();
       } else if (this.peek().isWhiteSpace()) {
         this.consume();
       } else if (this.peek().isNewLine()) {
         this.consume();
       } else if (this.peek().equals('=')) {
-        const pos = this.i;
-        this.consume();
-        if (!this.peek().equals('>')) {
-          this.throwError("Unexpected assignment! Expected '>'");
-        }
-        this.consume();
-        this.tokens.push({ type: TokenType.ARROW, pos, len: 2 });
+        this.#handleEquals();
       } else if (this.peek().equals(';')) {
         this.#handleSemi();
       } else if (this.peek().equals('/')) {
-        if (this.peek(1).equals('/')) {
-          this.consume();
-          this.consume();
-          this.#handleComment();
-        } else {
-          this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
-          this.consume();
-        }
+        this.#handleForwardSlash();
       } else if (this.peek().equals('\\')) {
-        this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.i, len: 1 });
-        this.consume();
+        this.#handleBackSlash();
       } else if (this.peek().equals('(')) {
         this.#handleLParen();
       } else if (this.peek().equals(')')) {
@@ -114,7 +75,64 @@ export class Tokeniser {
       } else {
         this.consume();
       }
+      this.buffer.clear();
     }
+  }
+
+  #handleQuote() {
+    const pos = this.i;
+    const opener = this.consume();
+    while (!this.peek().equals(opener.toString()) || this.peek(-1).equals('\\')) {
+      if (this.peek().isEoF()) {
+        this.throwError(`Unterminated string! Expected \`${opener}\`, got EoF`);
+      }
+      const c = this.consume();
+      if (c.equals('\\')) {
+        continue;
+      }
+      this.buffer.push(c);
+    }
+    this.consume();
+    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
+  }
+
+  #handleBacktick() {
+    const pos = this.i;
+    this.buffer.push(this.consume());
+    while (!this.peek().isBacktick() || this.peek(-1).equals('\\')) {
+      if (this.peek().isEoF()) {
+        this.throwError(`Unterminated string! Expected '\`', got EoF`);
+      }
+      this.buffer.push(this.consume());
+    }
+    this.buffer.push(this.consume());
+    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
+  }
+
+  #handleForwardSlash() {
+    if (this.peek(1).equals('/')) {
+      this.consume();
+      this.consume();
+      this.#handleComment();
+    } else {
+      this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
+      this.consume();
+    }
+  }
+
+  #handleBackSlash() {
+    this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.i, len: 1 });
+    this.consume();
+  }
+
+  #handleEquals() {
+    const pos = this.i;
+    this.consume();
+    if (!this.peek().equals('>')) {
+      this.throwError("Unexpected assignment! Expected '>'");
+    }
+    this.consume();
+    this.tokens.push({ type: TokenType.ARROW, pos, len: 2 });
   }
 
   #handleSemi() {
@@ -141,7 +159,6 @@ export class Tokeniser {
       this.buffer.push(this.consume());
     }
     this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos, len: this.i - pos });
-    this.buffer.clear();
   }
 
   #handleAlphaNumeric() {
