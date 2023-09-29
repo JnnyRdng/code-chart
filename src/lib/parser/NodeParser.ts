@@ -163,6 +163,16 @@ export class NodeParser {
         nodes.push(new ReturnNode());
         this.consume();
         this.consume();
+        let scope = 0;
+        while(this.peek() && scope > -1) {
+          const next = this.consume();
+          if (next?.type === TokenType.L_BRACE) {
+            scope++;
+          }
+          if (next?.type === TokenType.R_BRACE) {
+            scope--;
+          }
+        }
         return nodes;
       } else {
         const token = this.consume();
