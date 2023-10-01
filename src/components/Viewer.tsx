@@ -19,7 +19,9 @@ export const Viewer = () => {
   useEffect(() => {
     try {
       const tokeniser = new Tokeniser(debounce);
+      tokeniser.tokenise();
       const parser = new NodeParser(tokeniser, { trueLabel, falseLabel, flowchartDirection: direction });
+      parser.parse();
       setText(parser.mermaid);
       setError(null);
     } catch (e: unknown) {
@@ -44,12 +46,7 @@ export const Viewer = () => {
 
       </div>
       <ErrorWindow error={error} />
-      {/* {lexer.error !== '' && lexer.error !== undefined && <p>{lexer.error.toString()}</p>} */}
-      {/* {parser.error !== '' && <p>{parser.error}</p>} */}
-      {/* <Mermaid key={code} chart={'flowchart TD;\n' + code} /> */}
-      {/* <Mermaid key={code} chart={parsed} /> */}
       <Mermaid key={text} chart={text} />
-
     </div>
   );
 }

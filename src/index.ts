@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { Tokeniser } from './lib/parser/Tokeniser';
-import { NodeParser } from './lib/parser/Node';
+import { NodeParser } from './lib/parser/NodeParser';
 // import { TextNode } from './util/Node';
 // import { Boxer } from './util/Boxer';
 // import { ToCode } from './util/ToCode';
@@ -14,10 +14,12 @@ if (fileDir === undefined) {
 const file = fs.readFileSync(`./code/${fileDir}`, { encoding: 'utf8', flag: 'r' });
 console.log(file)
 const tokeniser = new Tokeniser(file);
+tokeniser.tokenise();
 console.log(tokeniser.tokens);
 console.log('done')
 
 const parser = new NodeParser(tokeniser);
+parser.parse();
 console.log(parser.mermaid);
 
 // const m = new MakeTree(tokeniser);

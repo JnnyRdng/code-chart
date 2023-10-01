@@ -1,41 +1,80 @@
 import { Token, TokenType } from "../domain/Token";
-import { Tokeniser, getMatchedBracketFromTokenType } from "./Tokeniser";
+import { Tokeniser, getMatchedBracketFromTokenType, getTokenTypeFromBracket } from "./Tokeniser";
 
 const getTokens = (input: string) => {
-  const t = new Tokeniser(input);
-  return t.getTokens();
+  const tokeniser = new Tokeniser(input);
+  tokeniser.tokenise();
+  return tokeniser.getTokens();
 }
 
 describe('Tokeniser tests', () => {
 
-  describe('Matching brackets', () => {
-    it('matches `)` to TokenType.L_PAREN', () => {
+  describe('Matching TokenTypes to opposing brackets', () => {
+    it('matches TokenType.L_PAREN to `)`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.L_PAREN)).toStrictEqual(')');
     });
 
-    it('matches `(` to TokenType.R_PAREN', () => {
+    it('matches TokenType.R_PAREN to `(`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.R_PAREN)).toStrictEqual('(');
     });
 
-    it('matches `]` to TokenType.L_BRACKET', () => {
+    it('matches TokenType.L_BRACKET to `]`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.L_BRACKET)).toStrictEqual(']');
     });
 
-    it('matches `[` to TokenType.R_BRACKET', () => {
+    it('matches TokenType.R_BRACKET to `[`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.R_BRACKET)).toStrictEqual('[');
     });
 
-    it('matches `}` to TokenType.L_BRACE', () => {
+    it('matches TokenType.L_BRACE to `}`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.L_BRACE)).toStrictEqual('}');
     });
 
-    it('matches `{` to TokenType.R_BRACE', () => {
+    it('matches TokenType.R_BRACE to `{`', () => {
       expect(getMatchedBracketFromTokenType(TokenType.R_BRACE)).toStrictEqual('{');
+    });
+
+    it('matches TokenType.FORWARD_SLASH to `/`', () => {
+      expect(getMatchedBracketFromTokenType(TokenType.FORWARD_SLASH)).toStrictEqual('/');
+    });
+
+    it('matches TokenType.BACKWARD_SLASH to `\\`', () => {
+      expect(getMatchedBracketFromTokenType(TokenType.BACKWARD_SLASH)).toStrictEqual('\\');
     });
 
     it('throws error if passed a non-bracket type', () => {
       expect(() => getMatchedBracketFromTokenType(TokenType.SEMI)).toThrow('Unknown bracket type! Could not match.');
     });
+  });
+
+  describe('Matching strings that are brackets to TokenTypes', () => {
+      it('matches `(` to TokenType.L_PAREN', () => {
+        expect(getTokenTypeFromBracket('(')).toStrictEqual(TokenType.L_PAREN);
+      });
+      
+      it('matches `)` to TokenType.R_PAREN', () => {
+        expect(getTokenTypeFromBracket(')')).toStrictEqual(TokenType.R_PAREN);
+      });
+
+      it('matches `{` to TokenType.L_BRACE', () => {
+        expect(getTokenTypeFromBracket('{')).toStrictEqual(TokenType.L_BRACE);
+      });
+      
+      it('matches `}` to TokenType.R_BRACE', () => {
+        expect(getTokenTypeFromBracket('}')).toStrictEqual(TokenType.R_BRACE);
+      });
+
+      it('matches `[` to TokenType.L_BRACKET', () => {
+        expect(getTokenTypeFromBracket('[')).toStrictEqual(TokenType.L_BRACKET);
+      });
+      
+      it('matches `]` to TokenType.R_BRACKET', () => {
+        expect(getTokenTypeFromBracket(']')).toStrictEqual(TokenType.R_BRACKET);
+      });
+
+      it('throws error if passed a non-bracket string', () => {
+        expect(() => getTokenTypeFromBracket('x')).toThrow('Unknown bracket type! Could not match.');
+      });
   });
 
   describe('Tokeniser Peek and Consume', () => {
@@ -70,6 +109,13 @@ describe('Tokeniser tests', () => {
       expect(t.peek(-1).isEoF()).toStrictEqual(true);
       expect(t.peek(input.length - 1).isEoF()).toStrictEqual(false);
       expect(t.peek(input.length).isEoF()).toStrictEqual(true);
+    });
+
+    it('throws an error if it consumes EoF', () => {
+      t.consume();
+      t.consume();
+      t.consume();
+      expect(() => t.consume()).toThrow('Cannot consume, end of file.');
     });
   });
 
@@ -385,59 +431,85 @@ describe('Tokeniser tests', () => {
       expect(actual).toStrictEqual(expected);
     });
 
-    it('forms a list of tokens', () => {
-      const input = `first;\nsecond; if (condition) {\n
-        print;
-      } else {
-        sleep;
-        return;
-      }
-      end;`
-      const actual = getTokens(input)
-      // console.log(actual)
-      console.log(tokensToFlowchart(actual))
+    it('parses a forward slash', () => {
+      const actual = getTokens('/');
+      const expected: Token[] = [
+        { type: TokenType.FORWARD_SLASH, pos: 0, len: 1 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('parses a backward slash', () => {
+      const actual = getTokens('\\');
+      const expected: Token[] = [
+        { type: TokenType.BACKWARD_SLASH, pos: 0, len: 1 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('parses a string with backticks', () => {
+      const actual = getTokens('`string`');
+      const expected: Token[] = [
+        { type: TokenType.STRING, value: '`string`', pos: 0, len: 8 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('ignores escaped backticks when looking for the end of the string', () => {
+      const actual = getTokens('`string\\` carries on`');
+      const expected: Token[] = [
+        { type: TokenType.STRING, value: '`string\\` carries on`', pos: 0, len: 21 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('throws an error parsing a string with unterminated backticks', () => {
+      expect(() => {
+        getTokens('`string');
+      }).toThrow("Unterminated string! Expected '`', got EoF");
+    });
+  });
+
+  describe('Comments', () => {
+    it('parses a comment from a double // to the end of the line', () => {
+      const actual = getTokens('// this is a comment\n this is not');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'this is a comment', pos: 3, len: 17 },
+        { type: TokenType.STRING, value: 'this is not', pos: 22, len: 11 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('a comment does not need a space after a //', () => {
+      const actual = getTokens('//comment\n');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'comment', pos: 2, len: 7 },
+      ];
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('a comment at the end of the file should not throw an error', () => {
+      const actual = getTokens('//eof');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'eof', pos: 2, len: 3 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('an empty comment should be empty', () => {
+      const actual = getTokens('//');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: '', pos: 2, len: 0 },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('an empty comment followed by a newline should be empty', () => {
+      const actual = getTokens('//\n');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: '', pos: 2, len: 0 },
+      ]
+      expect(actual).toStrictEqual(expected);
     });
   });
 });
-
-
-function tokensToFlowchart(tokens: Token[]) {
-  let flowchartText = 'flowchart TD;\n';
-  let nodeCounter = 1;
-  let inIfStatement = false;
-
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    const nextToken = tokens[i + 1];
-
-    if (token.type === 'STRING') {
-      flowchartText += `${nodeCounter}(${token.value})`;
-
-      if (nextToken && nextToken.type === 'SEMI') {
-        flowchartText += '\n';
-        if (inIfStatement) {
-          flowchartText += `${nodeCounter}-->|true|${++nodeCounter}`;
-        } else {
-          flowchartText += `-->${++nodeCounter}`;
-        }
-      }
-    } else if (token.type === 'IF') {
-      inIfStatement = true;
-      flowchartText += `${nodeCounter}{${nextToken.value}}`;
-      nodeCounter += 2;
-    } else if (token.type === 'ELSE') {
-      inIfStatement = false;
-      flowchartText += `-->|false|${nodeCounter}`;
-    }
-
-    if (nextToken && nextToken.type === 'SEMI') {
-      i++; // Skip the SEMI token
-    }
-
-    if (nextToken && nextToken.type !== 'ELSE') {
-      flowchartText += '\n';
-    }
-  }
-
-  return flowchartText;
-}

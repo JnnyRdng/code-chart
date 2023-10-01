@@ -8,7 +8,7 @@ Future features may or may not include:
 - [ ] Tests that actually complete
 - [ ] Else if / switch statements
 - [ ] While loop
-- [ ] An end to weird behaviour if you start putting in `return;` statements.
+- [x] ~~An end to weird behaviour if you start putting in return; statements.~~ _Potentially fixed, needs some tests_
 - [ ] Nicer colours / theming
 - [ ] Exporting as svg/png
 - [ ] Exporting input text / browser-based storage
