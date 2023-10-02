@@ -1,5 +1,5 @@
 import { Char } from "./Char";
-import { Token, TokenType } from "../domain/Token";
+import { CharPos, Token, TokenType } from "../domain/Token";
 import { Buffer } from './Buffer';
 
 export class Tokeniser {
@@ -76,7 +76,7 @@ export class Tokeniser {
       this.buffer.push(c);
     }
     this.consume();
-    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
+    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos: this.#getCharPos(pos, this.i - pos) });
   }
 
   #handleBacktick() {
@@ -89,7 +89,7 @@ export class Tokeniser {
       this.buffer.push(this.consume());
     }
     this.buffer.push(this.consume());
-    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.i - pos });
+    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos: this.#getCharPos(pos, this.i - pos) });
   }
 
   #handleAlphaNumeric() {
@@ -111,27 +111,27 @@ export class Tokeniser {
     ) {
       this.buffer.push(this.consume());
       if (this.buffer.equals('return')) {
-        this.tokens.push({ type: TokenType.RETURN, pos, len: 6 });
+        this.tokens.push({ type: TokenType.RETURN, pos: this.#getCharPos(pos, 6) });
         return;
       }
       if (this.buffer.equals('if')) {
-        this.tokens.push({ type: TokenType.IF, pos, len: 2 });
+        this.tokens.push({ type: TokenType.IF, pos: this.#getCharPos(pos, 2) });
         return;
       }
       if (this.buffer.equals('while')) {
-        this.tokens.push({ type: TokenType.WHILE, pos, len: 5 });
+        this.tokens.push({ type: TokenType.WHILE, pos: this.#getCharPos(pos, 5) });
         return;
       }
       if (this.buffer.equals('else')) {
-        this.tokens.push({ type: TokenType.ELSE, pos, len: 4 });
+        this.tokens.push({ type: TokenType.ELSE, pos: this.#getCharPos(pos, 4) });
         return;
       }
       if (this.buffer.equals('switch')) {
-        this.tokens.push({ type: TokenType.SWITCH, pos, len: 6 });
+        this.tokens.push({ type: TokenType.SWITCH, pos: this.#getCharPos(pos, 6) });
         return;
       }
     }
-    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos, len: this.buffer.length() });
+    this.tokens.push({ type: TokenType.STRING, value: this.buffer.toString(), pos: this.#getCharPos(pos, this.buffer.length()) });
   }
 
   #handleEquals() {
@@ -141,11 +141,11 @@ export class Tokeniser {
       this.throwError("Unexpected assignment! Expected '>'");
     }
     this.consume();
-    this.tokens.push({ type: TokenType.ARROW, pos, len: 2 });
+    this.tokens.push({ type: TokenType.ARROW, pos: this.#getCharPos(pos, 2) });
   }
 
   #handleSemi() {
-    this.tokens.push({ type: TokenType.SEMI, pos: this.i, len: 1 });
+    this.tokens.push({ type: TokenType.SEMI, pos: this.#getCharPos(this.i, 1) });
     this.consume();
   }
 
@@ -155,20 +155,20 @@ export class Tokeniser {
       this.consume();
       this.#handleComment();
     } else {
-      this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.i, len: 1 });
+      this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.#getCharPos(this.i, 1) });
       this.consume();
     }
   }
 
   #handleBackSlash() {
-    this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.i, len: 1 });
+    this.tokens.push({ type: TokenType.BACKWARD_SLASH, pos: this.#getCharPos(this.i, 1) });
     this.consume();
   }
 
   #handleBracket() {
     const char = this.consume();
     const type = getTokenTypeFromBracket(char.toString());
-    this.tokens.push({ type, pos: this.i - 1, len: 1 });
+    this.tokens.push({ type, pos: this.#getCharPos(this.i - 1, 1) });
   }
 
   #handleComment() {
@@ -179,7 +179,7 @@ export class Tokeniser {
     while (!this.peek().isNewLine() && !this.peek().isEoF()) {
       this.buffer.push(this.consume());
     }
-    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos, len: this.i - pos });
+    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos: this.#getCharPos(pos, this.i - pos) });
   }
 
 
@@ -211,6 +211,20 @@ export class Tokeniser {
     const srcSub = this.src.substring(0, this.i + u);
     const pointer = '^'.padStart(this.col, ' ').padEnd(u, ' ');
     throw new Error(`${errorMessage}\nLn: ${this.ln.toLocaleString()}, Col: ${this.col.toLocaleString()}\n\n${srcSub.substring(this.i - Math.max(this.col, v))}\n${pointer}`);
+  }
+
+  #getCharPos(pos: number, len: number): CharPos {
+    let ln = 1;
+    let col = 1;
+    for (let i = 0; i < pos; i++) {
+      const c = this.src[i];
+      col++;
+      if (c === '\n') {
+        ln++;
+        col = 1;
+      }
+    }
+    return { pos, len, ln, col }
   }
 }
 
