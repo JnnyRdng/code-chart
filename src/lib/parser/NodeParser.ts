@@ -231,7 +231,10 @@ export class NodeParser {
 
   consumeIf(tokenType: TokenType) {
     if (this.peekType() !== tokenType) {
-      throw new Error(`Expected '${tokenType}' at pos ${this.peek()?.pos.pos ?? 'EoF'}.`);
+      const c = this.peek();
+      const hasPos = c !== undefined;
+      const posAndLine = `${c?.pos.pos} (ln: ${c?.pos.ln}, col: ${c?.pos.col})`;
+      throw new Error(`Expected '${tokenType}' at pos ${hasPos ? posAndLine : 'EoF'}.`);
     }
     return this.consume();
   }

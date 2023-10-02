@@ -183,10 +183,10 @@ describe('NodeParser tests', () => {
       const p = getUnparsed('string');
       expect(() => {
         p.consumeIf(TokenType.L_BRACKET);
-      }).toThrow(`Expected 'L_BRACKET' at pos 0.`);
+      }).toThrow(`Expected 'L_BRACKET' at pos 0 (ln: 1, col: 1).`);
     });
 
-    it('consumeIf thows an error if at EoF', () => {
+    it('consumeIf throws an error if at EoF', () => {
       const p = getUnparsed('');
       expect(() => {
         p.consumeIf(TokenType.STRING);
