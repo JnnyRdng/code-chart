@@ -158,7 +158,7 @@ export class NodeParser {
         this.consume();
         this.consume();
         let scope = 0;
-        while(this.peek() && scope > -1) {
+        while (this.peek() && scope > -1) {
           const next = this.consume();
           if (next?.type === TokenType.L_BRACE) {
             scope++;
@@ -231,7 +231,7 @@ export class NodeParser {
 
   consumeIf(tokenType: TokenType) {
     if (this.peekType() !== tokenType) {
-      throw new Error(`Expected '${tokenType}' at pos ${this.peek()?.pos ?? 'EoF'}.`);
+      throw new Error(`Expected '${tokenType}' at pos ${this.peek()?.pos.pos ?? 'EoF'}.`);
     }
     return this.consume();
   }
