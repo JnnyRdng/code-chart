@@ -14,7 +14,7 @@ export const Viewer = () => {
   const [text, setText] = useState<string>('');
 
   const { code, direction, trueLabel, falseLabel, setDirection, setTrueLabel, setFalseLabel, } = useCodeContext();
-  const debounce = useDebounce(code, 200);
+  const [debounce, isUpdating] = useDebounce(code, 200);
 
   useEffect(() => {
     try {
@@ -43,8 +43,8 @@ export const Viewer = () => {
         <input id='trueLabel' value={trueLabel} onChange={e => setTrueLabel(e.target.value)} />
         <label htmlFor='falseLabel'>False Label</label>
         <input id='falseLabel' value={falseLabel} onChange={e => setFalseLabel(e.target.value)} />
-
       </div>
+      {isUpdating && <span>Updating &#8634;</span>}
       <ErrorWindow error={error} />
       <Mermaid key={text} chart={text} />
     </div>
