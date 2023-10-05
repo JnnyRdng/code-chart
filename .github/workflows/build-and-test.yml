@@ -18,3 +18,12 @@ jobs:
 
       - name: Run tests
         run: npm run test
+
+      - name: Jest report
+        uses: phoenix-actions/test-reporting@v8
+        id: test-report
+        if: success() || failure()
+        with:
+          name: Jest tests
+          path: ./target/test-results/
+          reporter: jest-junit
