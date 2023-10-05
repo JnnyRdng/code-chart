@@ -14,6 +14,7 @@ const config: Config = {
   // bail: 0,
 
   // The directory where Jest should store its cached dependency information
+  cacheDirectory: '<rootDir>/target/jest-cache',
   // cacheDirectory: "/private/var/folders/f3/62px1yj512l6g0jry4b4pn900000gn/T/jest_dx",
 
   // Automatically clear mock calls, instances, contexts and results before every test
@@ -26,7 +27,7 @@ const config: Config = {
   // collectCoverageFrom: undefined,
 
   // The directory where Jest should output its coverage files
-  // coverageDirectory: undefined,
+  coverageDirectory: '<rootDir>/target/test-results/',
 
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
@@ -109,7 +110,7 @@ const config: Config = {
   // projects: undefined,
 
   // Use this configuration option to add custom reporters to Jest
-  // reporters: undefined,
+  reporters: ['default', ['jest-junit', { outputDirectory: './target/test-results/', outputName: 'TESTS-results-jest.xml' }]],
 
   // Automatically reset mock state before every test
   // resetMocks: false,
