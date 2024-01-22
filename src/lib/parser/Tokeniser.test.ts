@@ -117,6 +117,28 @@ describe('Tokeniser tests', () => {
       t.consume();
       expect(() => t.consume()).toThrow('Cannot consume, end of file.');
     });
+
+    it('matches the next char', () => {
+      expect(t.nextIsOneOf('0')).toStrictEqual(true);
+      expect(t.nextIsOneOf('p')).toStrictEqual(false);
+      expect(t.nextIsOneOf('a', 'b', '0')).toStrictEqual(true);
+      t.consume();
+      expect(t.nextIsOneOf('0', '1', '2')).toStrictEqual(true);
+      expect(t.nextIsOneOf('0')).toStrictEqual(false);
+      expect(t.nextIsOneOf('1')).toStrictEqual(true);
+    });
+
+    it('fails to match next when no arguments are given', () => {
+      expect(t.nextIsOneOf()).toStrictEqual(false);
+    });
+
+    it('matches the next char if it is EOF', () => {
+      t.consume();
+      t.consume();
+      t.consume();
+      expect(t.nextIsOneOf()).toStrictEqual(true);
+      expect(t.nextIsOneOf('a', 'b', 'c')).toStrictEqual(true);
+    });
   });
 
   describe('Tokenising', () => {

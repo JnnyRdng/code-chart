@@ -1,3 +1,5 @@
+export const EOF_CHAR: string = '•';
+
 export class Char {
   readonly char: string;
   constructor(char: string) {
@@ -20,7 +22,7 @@ export class Char {
   }
 
   isEoF(): boolean {
-    return this.equals('•');
+    return this.equals(EOF_CHAR);
   }
 
   isAlpha(): boolean {
