@@ -31,9 +31,15 @@ type ValueTokenType = Extract<TokenType, TokenTypesWithValue[number]>;
 // Generate a type that includes values not in tokenTypesWithValue
 type NonValueTokenType = Exclude<TokenType, TokenTypesWithValue[number]>;
 
-interface TokenBase {
+export interface CharPos {
   pos: number;
   len: number;
+  ln: number;
+  col: number;
+}
+
+interface TokenBase {
+  pos: CharPos;
 }
 
 interface TokenTypeWithValue extends TokenBase {

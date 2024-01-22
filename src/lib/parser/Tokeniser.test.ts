@@ -48,33 +48,33 @@ describe('Tokeniser tests', () => {
   });
 
   describe('Matching strings that are brackets to TokenTypes', () => {
-      it('matches `(` to TokenType.L_PAREN', () => {
-        expect(getTokenTypeFromBracket('(')).toStrictEqual(TokenType.L_PAREN);
-      });
-      
-      it('matches `)` to TokenType.R_PAREN', () => {
-        expect(getTokenTypeFromBracket(')')).toStrictEqual(TokenType.R_PAREN);
-      });
+    it('matches `(` to TokenType.L_PAREN', () => {
+      expect(getTokenTypeFromBracket('(')).toStrictEqual(TokenType.L_PAREN);
+    });
 
-      it('matches `{` to TokenType.L_BRACE', () => {
-        expect(getTokenTypeFromBracket('{')).toStrictEqual(TokenType.L_BRACE);
-      });
-      
-      it('matches `}` to TokenType.R_BRACE', () => {
-        expect(getTokenTypeFromBracket('}')).toStrictEqual(TokenType.R_BRACE);
-      });
+    it('matches `)` to TokenType.R_PAREN', () => {
+      expect(getTokenTypeFromBracket(')')).toStrictEqual(TokenType.R_PAREN);
+    });
 
-      it('matches `[` to TokenType.L_BRACKET', () => {
-        expect(getTokenTypeFromBracket('[')).toStrictEqual(TokenType.L_BRACKET);
-      });
-      
-      it('matches `]` to TokenType.R_BRACKET', () => {
-        expect(getTokenTypeFromBracket(']')).toStrictEqual(TokenType.R_BRACKET);
-      });
+    it('matches `{` to TokenType.L_BRACE', () => {
+      expect(getTokenTypeFromBracket('{')).toStrictEqual(TokenType.L_BRACE);
+    });
 
-      it('throws error if passed a non-bracket string', () => {
-        expect(() => getTokenTypeFromBracket('x')).toThrow('Unknown bracket type! Could not match.');
-      });
+    it('matches `}` to TokenType.R_BRACE', () => {
+      expect(getTokenTypeFromBracket('}')).toStrictEqual(TokenType.R_BRACE);
+    });
+
+    it('matches `[` to TokenType.L_BRACKET', () => {
+      expect(getTokenTypeFromBracket('[')).toStrictEqual(TokenType.L_BRACKET);
+    });
+
+    it('matches `]` to TokenType.R_BRACKET', () => {
+      expect(getTokenTypeFromBracket(']')).toStrictEqual(TokenType.R_BRACKET);
+    });
+
+    it('throws error if passed a non-bracket string', () => {
+      expect(() => getTokenTypeFromBracket('x')).toThrow('Unknown bracket type! Could not match.');
+    });
   });
 
   describe('Tokeniser Peek and Consume', () => {
@@ -125,7 +125,7 @@ describe('Tokeniser tests', () => {
       const input = ';';
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.SEMI, pos: 0, len: 1 },
+        { type: TokenType.SEMI, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -134,9 +134,9 @@ describe('Tokeniser tests', () => {
       const input = ';;;';
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.SEMI, pos: 0, len: 1 },
-        { type: TokenType.SEMI, pos: 1, len: 1 },
-        { type: TokenType.SEMI, pos: 2, len: 1 },
+        { type: TokenType.SEMI, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.SEMI, pos: { pos: 1, len: 1, ln: 1, col: 2 } },
+        { type: TokenType.SEMI, pos: { pos: 2, len: 1, ln: 1, col: 3 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -145,9 +145,9 @@ describe('Tokeniser tests', () => {
       const input = '  ;  ;\n;\t';
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.SEMI, pos: 2, len: 1 },
-        { type: TokenType.SEMI, pos: 5, len: 1 },
-        { type: TokenType.SEMI, pos: 7, len: 1 },
+        { type: TokenType.SEMI, pos: { pos: 2, len: 1, ln: 1, col: 3 } },
+        { type: TokenType.SEMI, pos: { pos: 5, len: 1, ln: 1, col: 6 } },
+        { type: TokenType.SEMI, pos: { pos: 7, len: 1, ln: 2, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -156,10 +156,10 @@ describe('Tokeniser tests', () => {
       const input = `())(`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.L_PAREN, pos: 0, len: 1 },
-        { type: TokenType.R_PAREN, pos: 1, len: 1 },
-        { type: TokenType.R_PAREN, pos: 2, len: 1 },
-        { type: TokenType.L_PAREN, pos: 3, len: 1 },
+        { type: TokenType.L_PAREN, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.R_PAREN, pos: { pos: 1, len: 1, ln: 1, col: 2 } },
+        { type: TokenType.R_PAREN, pos: { pos: 2, len: 1, ln: 1, col: 3 } },
+        { type: TokenType.L_PAREN, pos: { pos: 3, len: 1, ln: 1, col: 4 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -168,10 +168,10 @@ describe('Tokeniser tests', () => {
       const input = `{}}{`;
       const actual = getTokens(input);
       const expected = [
-        { type: TokenType.L_BRACE, pos: 0, len: 1 },
-        { type: TokenType.R_BRACE, pos: 1, len: 1 },
-        { type: TokenType.R_BRACE, pos: 2, len: 1 },
-        { type: TokenType.L_BRACE, pos: 3, len: 1 },
+        { type: TokenType.L_BRACE, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.R_BRACE, pos: { pos: 1, len: 1, ln: 1, col: 2 } },
+        { type: TokenType.R_BRACE, pos: { pos: 2, len: 1, ln: 1, col: 3 } },
+        { type: TokenType.L_BRACE, pos: { pos: 3, len: 1, ln: 1, col: 4 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -180,10 +180,10 @@ describe('Tokeniser tests', () => {
       const input = `[]][`;
       const actual = getTokens(input);
       const expected = [
-        { type: TokenType.L_BRACKET, pos: 0, len: 1 },
-        { type: TokenType.R_BRACKET, pos: 1, len: 1 },
-        { type: TokenType.R_BRACKET, pos: 2, len: 1 },
-        { type: TokenType.L_BRACKET, pos: 3, len: 1 },
+        { type: TokenType.L_BRACKET, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.R_BRACKET, pos: { pos: 1, len: 1, ln: 1, col: 2 } },
+        { type: TokenType.R_BRACKET, pos: { pos: 2, len: 1, ln: 1, col: 3 } },
+        { type: TokenType.L_BRACKET, pos: { pos: 3, len: 1, ln: 1, col: 4 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -192,7 +192,7 @@ describe('Tokeniser tests', () => {
       const input = '"this is a string"';
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.STRING, value: 'this is a string', pos: 0, len: 18 },
+        { type: TokenType.STRING, value: 'this is a string', pos: { pos: 0, len: 18, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -206,7 +206,7 @@ describe('Tokeniser tests', () => {
       const input = `'it\\'s escaped'`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.STRING, value: `it's escaped`, pos: 0, len: 15 },
+        { type: TokenType.STRING, value: `it's escaped`, pos: { pos: 0, len: 15, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -215,7 +215,7 @@ describe('Tokeniser tests', () => {
       const input = `"it\\"s escaped"`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.STRING, value: `it"s escaped`, pos: 0, len: 15 },
+        { type: TokenType.STRING, value: `it"s escaped`, pos: { pos: 0, len: 15, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -224,7 +224,7 @@ describe('Tokeniser tests', () => {
       const input = `'text with """ double quotes inside'`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.STRING, value: `text with """ double quotes inside`, pos: 0, len: 36 }
+        { type: TokenType.STRING, value: `text with """ double quotes inside`, pos: { pos: 0, len: 36, ln: 1, col: 1 } }
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -233,7 +233,7 @@ describe('Tokeniser tests', () => {
       const input = `"text with ''' single quotes inside"`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.STRING, value: `text with ''' single quotes inside`, pos: 0, len: 36 }
+        { type: TokenType.STRING, value: `text with ''' single quotes inside`, pos: { pos: 0, len: 36, ln: 1, col: 1 } }
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -254,14 +254,14 @@ describe('Tokeniser tests', () => {
       const input = `if ('thingy') {\n 'do well';\n}`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.IF, pos: 0, len: 2 },
-        { type: TokenType.L_PAREN, pos: 3, len: 1 },
-        { type: TokenType.STRING, value: 'thingy', pos: 4, len: 8 },
-        { type: TokenType.R_PAREN, pos: 12, len: 1 },
-        { type: TokenType.L_BRACE, pos: 14, len: 1 },
-        { type: TokenType.STRING, value: 'do well', pos: 17, len: 9 },
-        { type: TokenType.SEMI, pos: 26, len: 1 },
-        { type: TokenType.R_BRACE, pos: 28, len: 1 },
+        { type: TokenType.IF, pos: { pos: 0, len: 2, ln: 1, col: 1 } },
+        { type: TokenType.L_PAREN, pos: { pos: 3, len: 1, ln: 1, col: 4 } },
+        { type: TokenType.STRING, value: 'thingy', pos: { pos: 4, len: 8, ln: 1, col: 5 } },
+        { type: TokenType.R_PAREN, pos: { pos: 12, len: 1, ln: 1, col: 13 } },
+        { type: TokenType.L_BRACE, pos: { pos: 14, len: 1, ln: 1, col: 15 } },
+        { type: TokenType.STRING, value: 'do well', pos: { pos: 17, len: 9, ln: 2, col: 2 } },
+        { type: TokenType.SEMI, pos: { pos: 26, len: 1, ln: 2, col: 11 } },
+        { type: TokenType.R_BRACE, pos: { pos: 28, len: 1, ln: 3, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -270,9 +270,9 @@ describe('Tokeniser tests', () => {
       const input = `(thingy)`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.L_PAREN, pos: 0, len: 1 },
-        { type: TokenType.STRING, value: 'thingy', pos: 1, len: 6 },
-        { type: TokenType.R_PAREN, pos: 7, len: 1 },
+        { type: TokenType.L_PAREN, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.STRING, value: 'thingy', pos: { pos: 1, len: 6, ln: 1, col: 2 } },
+        { type: TokenType.R_PAREN, pos: { pos: 7, len: 1, ln: 1, col: 8 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -281,11 +281,11 @@ describe('Tokeniser tests', () => {
       const input = `((thingy))`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.L_PAREN, pos: 0, len: 1 },
-        { type: TokenType.L_PAREN, pos: 1, len: 1 },
-        { type: TokenType.STRING, value: 'thingy', pos: 2, len: 6 },
-        { type: TokenType.R_PAREN, pos: 8, len: 1 },
-        { type: TokenType.R_PAREN, pos: 9, len: 1 },
+        { type: TokenType.L_PAREN, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.L_PAREN, pos: { pos: 1, len: 1, ln: 1, col: 2 } },
+        { type: TokenType.STRING, value: 'thingy', pos: { pos: 2, len: 6, ln: 1, col: 3 } },
+        { type: TokenType.R_PAREN, pos: { pos: 8, len: 1, ln: 1, col: 9 } },
+        { type: TokenType.R_PAREN, pos: { pos: 9, len: 1, ln: 1, col: 10 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -294,9 +294,9 @@ describe('Tokeniser tests', () => {
       const input = `[thingy]`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.L_BRACKET, pos: 0, len: 1 },
-        { type: TokenType.STRING, value: 'thingy', pos: 1, len: 6 },
-        { type: TokenType.R_BRACKET, pos: 7, len: 1 },
+        { type: TokenType.L_BRACKET, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.STRING, value: 'thingy', pos: { pos: 1, len: 6, ln: 1, col: 2 } },
+        { type: TokenType.R_BRACKET, pos: { pos: 7, len: 1, ln: 1, col: 8 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -305,11 +305,11 @@ describe('Tokeniser tests', () => {
       const input = `[thingy()] [no bracket![`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.L_BRACKET, pos: 0, len: 1 },
-        { type: TokenType.STRING, value: 'thingy()', pos: 1, len: 8 },
-        { type: TokenType.R_BRACKET, pos: 9, len: 1 },
-        { type: TokenType.L_BRACKET, pos: 11, len: 1 },
-        { type: TokenType.STRING, value: 'no bracket![', pos: 12, len: 12 },
+        { type: TokenType.L_BRACKET, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.STRING, value: 'thingy()', pos: { pos: 1, len: 8, ln: 1, col: 2 } },
+        { type: TokenType.R_BRACKET, pos: { pos: 9, len: 1, ln: 1, col: 10 } },
+        { type: TokenType.L_BRACKET, pos: { pos: 11, len: 1, ln: 1, col: 12 } },
+        { type: TokenType.STRING, value: 'no bracket![', pos: { pos: 12, len: 12, ln: 1, col: 13 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -318,12 +318,12 @@ describe('Tokeniser tests', () => {
       const input = `if (thingy) {}`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.IF, pos: 0, len: 2 },
-        { type: TokenType.L_PAREN, pos: 3, len: 1 },
-        { type: TokenType.STRING, value: 'thingy', pos: 4, len: 6 },
-        { type: TokenType.R_PAREN, pos: 10, len: 1 },
-        { type: TokenType.L_BRACE, pos: 12, len: 1 },
-        { type: TokenType.R_BRACE, pos: 13, len: 1 },
+        { type: TokenType.IF, pos: { pos: 0, len: 2, ln: 1, col: 1 } },
+        { type: TokenType.L_PAREN, pos: { pos: 3, len: 1, ln: 1, col: 4 } },
+        { type: TokenType.STRING, value: 'thingy', pos: { pos: 4, len: 6, ln: 1, col: 5 } },
+        { type: TokenType.R_PAREN, pos: { pos: 10, len: 1, ln: 1, col: 11 } },
+        { type: TokenType.L_BRACE, pos: { pos: 12, len: 1, ln: 1, col: 13 } },
+        { type: TokenType.R_BRACE, pos: { pos: 13, len: 1, ln: 1, col: 14 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -332,12 +332,12 @@ describe('Tokeniser tests', () => {
       const input = `thingy;do well;\noh my god;`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.STRING, value: 'thingy', pos: 0, len: 6 },
-        { type: TokenType.SEMI, pos: 6, len: 1 },
-        { type: TokenType.STRING, value: 'do well', pos: 7, len: 7 },
-        { type: TokenType.SEMI, pos: 14, len: 1 },
-        { type: TokenType.STRING, value: 'oh my god', pos: 16, len: 9 },
-        { type: TokenType.SEMI, pos: 25, len: 1 },
+        { type: TokenType.STRING, value: 'thingy', pos: { pos: 0, len: 6, ln: 1, col: 1 } },
+        { type: TokenType.SEMI, pos: { pos: 6, len: 1, ln: 1, col: 7 } },
+        { type: TokenType.STRING, value: 'do well', pos: { pos: 7, len: 7, ln: 1, col: 8 } },
+        { type: TokenType.SEMI, pos: { pos: 14, len: 1, ln: 1, col: 15 } },
+        { type: TokenType.STRING, value: 'oh my god', pos: { pos: 16, len: 9, ln: 2, col: 1 } },
+        { type: TokenType.SEMI, pos: { pos: 25, len: 1, ln: 2, col: 10 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -346,14 +346,14 @@ describe('Tokeniser tests', () => {
       const input = `while (thingy) {\n 'do well';\n}`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.WHILE, pos: 0, len: 5 },
-        { type: TokenType.L_PAREN, pos: 6, len: 1 },
-        { type: TokenType.STRING, value: 'thingy', pos: 7, len: 6 },
-        { type: TokenType.R_PAREN, pos: 13, len: 1 },
-        { type: TokenType.L_BRACE, pos: 15, len: 1 },
-        { type: TokenType.STRING, value: 'do well', pos: 18, len: 9 },
-        { type: TokenType.SEMI, pos: 27, len: 1 },
-        { type: TokenType.R_BRACE, pos: 29, len: 1 },
+        { type: TokenType.WHILE, pos: { pos: 0, len: 5, ln: 1, col: 1 } },
+        { type: TokenType.L_PAREN, pos: { pos: 6, len: 1, ln: 1, col: 7 } },
+        { type: TokenType.STRING, value: 'thingy', pos: { pos: 7, len: 6, ln: 1, col: 8 } },
+        { type: TokenType.R_PAREN, pos: { pos: 13, len: 1, ln: 1, col: 14 } },
+        { type: TokenType.L_BRACE, pos: { pos: 15, len: 1, ln: 1, col: 16 } },
+        { type: TokenType.STRING, value: 'do well', pos: { pos: 18, len: 9, ln: 2, col: 2 } },
+        { type: TokenType.SEMI, pos: { pos: 27, len: 1, ln: 2, col: 11 } },
+        { type: TokenType.R_BRACE, pos: { pos: 29, len: 1, ln: 3, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -362,12 +362,12 @@ describe('Tokeniser tests', () => {
       const input = `switch (condition) {}`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.SWITCH, pos: 0, len: 6 },
-        { type: TokenType.L_PAREN, pos: 7, len: 1 },
-        { type: TokenType.STRING, value: 'condition', pos: 8, len: 9 },
-        { type: TokenType.R_PAREN, pos: 17, len: 1 },
-        { type: TokenType.L_BRACE, pos: 19, len: 1 },
-        { type: TokenType.R_BRACE, pos: 20, len: 1 },
+        { type: TokenType.SWITCH, pos: { pos: 0, len: 6, ln: 1, col: 1 } },
+        { type: TokenType.L_PAREN, pos: { pos: 7, len: 1, ln: 1, col: 8 } },
+        { type: TokenType.STRING, value: 'condition', pos: { pos: 8, len: 9, ln: 1, col: 9 } },
+        { type: TokenType.R_PAREN, pos: { pos: 17, len: 1, ln: 1, col: 18 } },
+        { type: TokenType.L_BRACE, pos: { pos: 19, len: 1, ln: 1, col: 20 } },
+        { type: TokenType.R_BRACE, pos: { pos: 20, len: 1, ln: 1, col: 21 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -375,7 +375,7 @@ describe('Tokeniser tests', () => {
     it('parses an arrow', () => {
       const actual = getTokens(`=>`);
       const expected: Token[] = [
-        { type: TokenType.ARROW, pos: 0, len: 2 }
+        { type: TokenType.ARROW, pos: { pos: 0, len: 2, ln: 1, col: 1 } }
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -384,12 +384,12 @@ describe('Tokeniser tests', () => {
       const input = `(arg) => result;`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.L_PAREN, pos: 0, len: 1 },
-        { type: TokenType.STRING, value: 'arg', pos: 1, len: 3 },
-        { type: TokenType.R_PAREN, pos: 4, len: 1 },
-        { type: TokenType.ARROW, pos: 6, len: 2 },
-        { type: TokenType.STRING, value: 'result', pos: 9, len: 6 },
-        { type: TokenType.SEMI, pos: 15, len: 1 },
+        { type: TokenType.L_PAREN, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.STRING, value: 'arg', pos: { pos: 1, len: 3, ln: 1, col: 2 } },
+        { type: TokenType.R_PAREN, pos: { pos: 4, len: 1, ln: 1, col: 5 } },
+        { type: TokenType.ARROW, pos: { pos: 6, len: 2, ln: 1, col: 7 } },
+        { type: TokenType.STRING, value: 'result', pos: { pos: 9, len: 6, ln: 1, col: 10 } },
+        { type: TokenType.SEMI, pos: { pos: 15, len: 1, ln: 1, col: 16 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -398,14 +398,14 @@ describe('Tokeniser tests', () => {
       const input = `(arg) => {\n    scope;\n}`;
       const actual = getTokens(input);
       const expected: Token[] = [
-        { type: TokenType.L_PAREN, pos: 0, len: 1 },
-        { type: TokenType.STRING, value: 'arg', pos: 1, len: 3 },
-        { type: TokenType.R_PAREN, pos: 4, len: 1 },
-        { type: TokenType.ARROW, pos: 6, len: 2 },
-        { type: TokenType.L_BRACE, pos: 9, len: 1 },
-        { type: TokenType.STRING, value: 'scope', pos: 15, len: 5 },
-        { type: TokenType.SEMI, pos: 20, len: 1 },
-        { type: TokenType.R_BRACE, pos: 22, len: 1 },
+        { type: TokenType.L_PAREN, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
+        { type: TokenType.STRING, value: 'arg', pos: { pos: 1, len: 3, ln: 1, col: 2 } },
+        { type: TokenType.R_PAREN, pos: { pos: 4, len: 1, ln: 1, col: 5 } },
+        { type: TokenType.ARROW, pos: { pos: 6, len: 2, ln: 1, col: 7 } },
+        { type: TokenType.L_BRACE, pos: { pos: 9, len: 1, ln: 1, col: 10 } },
+        { type: TokenType.STRING, value: 'scope', pos: { pos: 15, len: 5, ln: 2, col: 5 } },
+        { type: TokenType.SEMI, pos: { pos: 20, len: 1, ln: 2, col: 10 } },
+        { type: TokenType.R_BRACE, pos: { pos: 22, len: 1, ln: 3, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -417,8 +417,8 @@ describe('Tokeniser tests', () => {
     it('parses a return statement', () => {
       const actual = getTokens(`return;`);
       const expected: Token[] = [
-        { type: TokenType.RETURN, pos: 0, len: 6 },
-        { type: TokenType.SEMI, pos: 6, len: 1 },
+        { type: TokenType.RETURN, pos: { pos: 0, len: 6, ln: 1, col: 1 } },
+        { type: TokenType.SEMI, pos: { pos: 6, len: 1, ln: 1, col: 7 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -426,7 +426,7 @@ describe('Tokeniser tests', () => {
     it('parses an else statement', () => {
       const actual = getTokens(`else`);
       const expected: Token[] = [
-        { type: TokenType.ELSE, pos: 0, len: 4 },
+        { type: TokenType.ELSE, pos: { pos: 0, len: 4, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -434,7 +434,7 @@ describe('Tokeniser tests', () => {
     it('parses a forward slash', () => {
       const actual = getTokens('/');
       const expected: Token[] = [
-        { type: TokenType.FORWARD_SLASH, pos: 0, len: 1 },
+        { type: TokenType.FORWARD_SLASH, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -442,7 +442,7 @@ describe('Tokeniser tests', () => {
     it('parses a backward slash', () => {
       const actual = getTokens('\\');
       const expected: Token[] = [
-        { type: TokenType.BACKWARD_SLASH, pos: 0, len: 1 },
+        { type: TokenType.BACKWARD_SLASH, pos: { pos: 0, len: 1, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -450,7 +450,7 @@ describe('Tokeniser tests', () => {
     it('parses a string with backticks', () => {
       const actual = getTokens('`string`');
       const expected: Token[] = [
-        { type: TokenType.STRING, value: '`string`', pos: 0, len: 8 },
+        { type: TokenType.STRING, value: '`string`', pos: { pos: 0, len: 8, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -458,7 +458,7 @@ describe('Tokeniser tests', () => {
     it('ignores escaped backticks when looking for the end of the string', () => {
       const actual = getTokens('`string\\` carries on`');
       const expected: Token[] = [
-        { type: TokenType.STRING, value: '`string\\` carries on`', pos: 0, len: 21 },
+        { type: TokenType.STRING, value: '`string\\` carries on`', pos: { pos: 0, len: 21, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -474,8 +474,8 @@ describe('Tokeniser tests', () => {
     it('parses a comment from a double // to the end of the line', () => {
       const actual = getTokens('// this is a comment\n this is not');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: 'this is a comment', pos: 3, len: 17 },
-        { type: TokenType.STRING, value: 'this is not', pos: 22, len: 11 },
+        { type: TokenType.COMMENT, value: 'this is a comment', pos: { pos: 0, len: 20, ln: 1, col: 1 } },
+        { type: TokenType.STRING, value: 'this is not', pos: { pos: 22, len: 11, ln: 2, col: 2 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -483,7 +483,7 @@ describe('Tokeniser tests', () => {
     it('a comment does not need a space after a //', () => {
       const actual = getTokens('//comment\n');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: 'comment', pos: 2, len: 7 },
+        { type: TokenType.COMMENT, value: 'comment', pos: { pos: 0, len: 9, ln: 1, col: 1 } },
       ];
       expect(actual).toStrictEqual(expected);
     });
@@ -491,7 +491,7 @@ describe('Tokeniser tests', () => {
     it('a comment at the end of the file should not throw an error', () => {
       const actual = getTokens('//eof');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: 'eof', pos: 2, len: 3 },
+        { type: TokenType.COMMENT, value: 'eof', pos: { pos: 0, len: 5, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -499,7 +499,7 @@ describe('Tokeniser tests', () => {
     it('an empty comment should be empty', () => {
       const actual = getTokens('//');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: '', pos: 2, len: 0 },
+        { type: TokenType.COMMENT, value: '', pos: { pos: 0, len: 2, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -507,9 +507,44 @@ describe('Tokeniser tests', () => {
     it('an empty comment followed by a newline should be empty', () => {
       const actual = getTokens('//\n');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: '', pos: 2, len: 0 },
+        { type: TokenType.COMMENT, value: '', pos: { pos: 0, len: 2, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
+
+    it('multiple lines of comments are concatenated', () => {
+      const actual = getTokens('// first comment\n// second comment');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'first comment\nsecond comment', pos: { pos: 0, len: 34, ln: 1, col: 1 } },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('parses block comments', () => {
+      const actual = getTokens('/*comment block!*/');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'comment block!', pos: { pos: 0, len: 18, ln: 1, col: 1 } },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('parses block comments containing an asterisk', () => {
+      const actual = getTokens('/*comment block**/');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'comment block*', pos: { pos: 0, len: 18, ln: 1, col: 1 } },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('parses multiline block comments', () => {
+      const actual = getTokens('/*comment\nblock*/');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'comment\nblock', pos: { pos: 0, len: 17, ln: 1, col: 1 } },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    // TODO: more tests for comments please
+    // such as an unterminated block comment. shouldn't error.
   });
 });

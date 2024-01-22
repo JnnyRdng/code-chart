@@ -36,7 +36,7 @@ describe('NodeParser tests', () => {
     }
 
     beforeEach(() => {
-     create();
+      create();
     });
 
     it('should initialise i to 0', () => {
@@ -71,33 +71,33 @@ describe('NodeParser tests', () => {
 
       it('has a default value for the trueLabel', () => {
         expect(parser.options.trueLabel).toStrictEqual('True');
-        create({ trueLabel: undefined});
+        create({ trueLabel: undefined });
         expect(parser.options.trueLabel).toStrictEqual('True');
       });
-      
+
       it('should set the trueLabel', () => {
-        create({ trueLabel: 'test'});
+        create({ trueLabel: 'test' });
         expect(parser.options.trueLabel).toStrictEqual('test');
       });
 
       it('has a default value for the falseLabel', () => {
         expect(parser.options.falseLabel).toStrictEqual('False');
-        create({ falseLabel: undefined});
+        create({ falseLabel: undefined });
         expect(parser.options.falseLabel).toStrictEqual('False');
       });
-      
+
       it('should set the falseLabel', () => {
-        create({ falseLabel: 'test'});
+        create({ falseLabel: 'test' });
         expect(parser.options.falseLabel).toStrictEqual('test');
       });
 
       it('has a default value for flowchartDirection', () => {
-          expect(parser.options.flowchartDirection).toStrictEqual('TD');
+        expect(parser.options.flowchartDirection).toStrictEqual('TD');
       });
 
       it('should set the flowchartDirection', () => {
-          create({flowchartDirection: 'LR'});
-          expect(parser.options.flowchartDirection).toStrictEqual('LR');
+        create({ flowchartDirection: 'LR' });
+        expect(parser.options.flowchartDirection).toStrictEqual('LR');
       });
     });
 
@@ -114,7 +114,7 @@ describe('NodeParser tests', () => {
 
     it('peeks at the first token', () => {
       const p = getUnparsed('string');
-      expect(p.peek()).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: 0, len: 6 });
+      expect(p.peek()).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: { pos: 0, len: 6, ln: 1, col: 1 } });
     });
 
     it('consuming the last token returns undefined', () => {
@@ -124,14 +124,14 @@ describe('NodeParser tests', () => {
 
     it('consume ratchets through the tokens', () => {
       const p = getUnparsed('string;');
-      expect(p.consume()).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: 0, len: 6 });
-      expect(p.consume()).toStrictEqual({ type: TokenType.SEMI, pos: 6, len: 1 });
+      expect(p.consume()).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: { pos: 0, len: 6, ln: 1, col: 1 } });
+      expect(p.consume()).toStrictEqual({ type: TokenType.SEMI, pos: { pos: 6, len: 1, ln: 1, col: 7 } });
     });
 
     it('identifies the next token', () => {
       const p = getUnparsed('string');
       expect(p.tokens).toHaveLength(1);
-      expect(p.tokens[0]).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: 0, len: 6 });
+      expect(p.tokens[0]).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: { pos: 0, len: 6, ln: 1, col: 1 } });
 
       expect(p.nextMatches(TokenType.STRING)).toBe(true);
       expect(p.nextMatches(TokenType.STRING, TokenType.SEMI)).toBe(false);
@@ -140,8 +140,8 @@ describe('NodeParser tests', () => {
     it('identifies multiple tokens', () => {
       const p = getUnparsed('string;');
       expect(p.tokens).toHaveLength(2);
-      expect(p.tokens[0]).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: 0, len: 6 });
-      expect(p.tokens[1]).toStrictEqual({ type: TokenType.SEMI, pos: 6, len: 1 });
+      expect(p.tokens[0]).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: { pos: 0, len: 6, ln: 1, col: 1 } });
+      expect(p.tokens[1]).toStrictEqual({ type: TokenType.SEMI, pos: { pos: 6, len: 1, ln: 1, col: 7 } });
 
       expect(p.nextMatches(TokenType.STRING)).toBe(true);
       expect(p.nextMatches(TokenType.STRING, TokenType.SEMI)).toBe(true);
@@ -176,17 +176,17 @@ describe('NodeParser tests', () => {
 
     it('consumeIf returns the next token if it is of the expected type', () => {
       const p = getUnparsed('string');
-      expect(p.consumeIf(TokenType.STRING)).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: 0, len: 6 });
+      expect(p.consumeIf(TokenType.STRING)).toStrictEqual({ type: TokenType.STRING, value: 'string', pos: { pos: 0, len: 6, ln: 1, col: 1 } });
     });
 
     it('consumeIf throws an error if the next token is of a different type', () => {
       const p = getUnparsed('string');
       expect(() => {
         p.consumeIf(TokenType.L_BRACKET);
-      }).toThrow(`Expected 'L_BRACKET' at pos 0.`);
+      }).toThrow(`Expected 'L_BRACKET' at pos 0 (ln: 1, col: 1).`);
     });
 
-    it('consumeIf thows an error if at EoF', () => {
+    it('consumeIf throws an error if at EoF', () => {
       const p = getUnparsed('');
       expect(() => {
         p.consumeIf(TokenType.STRING);
