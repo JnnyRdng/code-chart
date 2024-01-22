@@ -3,6 +3,7 @@ import { Token, TokenType } from '../domain/Token';
 import { BoxShape } from '../domain/BoxShape';
 import { AbstractNode, ConditionNode, ExpressionNode, ProgramNode, ReturnNode, resetId } from './Node';
 import { Tokeniser } from './Tokeniser';
+import { LinkGenerator } from './LinkGenerator';
 
 export class NodeParser {
 
@@ -11,7 +12,7 @@ export class NodeParser {
 
   i: number;
   code: string;
-  arrows: string;
+  links: string;
   classDefs: string;
   options: ParserOptions;
 
@@ -21,7 +22,7 @@ export class NodeParser {
     this.tokens = tokeniser.getTokens();
     this.i = 0;
     this.code = '';
-    this.arrows = '';
+    this.links = '';
     this.classDefs = '';
     this.options = {
       trueLabel: options.trueLabel || 'True',
@@ -37,7 +38,12 @@ export class NodeParser {
       this.root.addInstructions(this.#parse());
     }
     this.generate(this.root);
-    this.generateLabels(this.root);
+    const linkGenerator = new LinkGenerator(this.root, {
+      trueLabel: this.options.trueLabel,
+      falseLabel: this.options.falseLabel,
+    });
+    linkGenerator.start()
+    this.links += linkGenerator.text;
     this.addClassDefs();
   }
 
@@ -46,51 +52,7 @@ export class NodeParser {
   }
 
   get mermaid() {
-    return this.code + this.arrows + this.classDefs;
-  }
-
-  generateLabels(root: AbstractNode): number[] {
-    for (const [i, node] of root.instructions.entries()) {
-      if (node instanceof ReturnNode) {
-        continue;
-      }
-      let previous: AbstractNode | undefined;
-      if (i > 0) {
-        previous = root.instructions[i - 1];
-      }
-      if (previous instanceof ExpressionNode) {
-        this.addLabel(previous.id, node.id);
-      } else if (previous instanceof ConditionNode) {
-        const previousIds = previous.getTerminalIds().join(' & ');
-        this.addLabel(previousIds, node.id);
-      }
-      if (node instanceof ConditionNode) {
-        const firstIf = node.ifBlock.instructions[0];
-        this.addLabel(node.id, firstIf.id, this.options.trueLabel);
-        this.generateLabels(node.ifBlock);
-        const firstElse = node.elseBlock.instructions[0];
-        if (firstElse) {
-          this.addLabel(node.id, firstElse.id, this.options.falseLabel);
-          this.generateLabels(node.elseBlock);
-        } else {
-          const nextNode = root.instructions[i + 1];
-          if (nextNode) {
-            this.addLabel(node.ifBlock.getLastInstruction().id, nextNode.id);
-            this.addLabel(node.id, nextNode.id, this.options.falseLabel);
-          }
-        }
-      }
-    }
-    return [];
-
-  }
-
-  addLabel(from: string | number, to: number, label?: string) {
-    const tag = label === undefined ? '' : `|${label}|`;
-    const arrow = `  ${from}-->${tag}${to}\n`;
-    if (!this.arrows.includes(arrow)) {
-      this.arrows += arrow;
-    }
+    return this.code + this.links + this.classDefs;
   }
 
   generate(node: AbstractNode) {
@@ -110,43 +72,15 @@ export class NodeParser {
     const nodes: AbstractNode[] = [];
     while (this.peek()) {
       if (this.nextMatches(TokenType.STRING)) {
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        if (this.nextMatches(TokenType.SEMI)) {
-          this.consume();
-        }
-        const node = new ExpressionNode(string);
-        nodes.push(node);
+        nodes.push(this.#handleSquareString());
       } else if (this.nextMatches(TokenType.L_PAREN, TokenType.STRING, TokenType.R_PAREN, TokenType.SEMI)) {
-        this.consume();
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        this.consume();
-        const node = new ExpressionNode(string, BoxShape.ROUNDED);
-        nodes.push(node);
+        nodes.push(this.#handleRoundedString());
       } else if (this.nextMatches(TokenType.L_PAREN, TokenType.L_PAREN, TokenType.STRING, TokenType.R_PAREN, TokenType.R_PAREN, TokenType.SEMI)) {
-        this.consume();
-        this.consume();
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        this.consume();
-        this.consume();
-        const node = new ExpressionNode(string, BoxShape.CIRCULAR);
-        nodes.push(node);
+        nodes.push(this.#handleCircularString());
       } else if (this.nextMatches(TokenType.FORWARD_SLASH, TokenType.STRING, TokenType.FORWARD_SLASH, TokenType.SEMI)) {
-        this.consume();
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        this.consume();
-        const node = new ExpressionNode(string, BoxShape.PARALLELOGRAM);
-        nodes.push(node);
+        nodes.push(this.#handleParallelogram());
       } else if (this.nextMatches(TokenType.BACKWARD_SLASH, TokenType.STRING, TokenType.BACKWARD_SLASH, TokenType.SEMI)) {
-        this.consume();
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        this.consume();
-        const node = new ExpressionNode(string, BoxShape.REVERSE_PARALLELOGRAM);
-        nodes.push(node);
+        nodes.push(this.#handleParallelogram(true));
       } else if (this.nextMatches(TokenType.R_BRACE)) {
         this.consume();
         return nodes;
@@ -154,19 +88,7 @@ export class NodeParser {
         this.consume();
         nodes.push(this.#parseIf());
       } else if (this.nextMatches(TokenType.RETURN, TokenType.SEMI)) {
-        nodes.push(new ReturnNode());
-        this.consume();
-        this.consume();
-        let scope = 0;
-        while (this.peek() && scope > -1) {
-          const next = this.consume();
-          if (next?.type === TokenType.L_BRACE) {
-            scope++;
-          }
-          if (next?.type === TokenType.R_BRACE) {
-            scope--;
-          }
-        }
+        nodes.push(this.#handleReturn());
         return nodes;
       } else if (this.nextMatches(TokenType.COMMENT)) {
         //TODO: would prefer to do something with comments.
@@ -179,6 +101,57 @@ export class NodeParser {
       }
     }
     return nodes;
+  }
+
+  #handleSquareString() {
+    const string = this.consume()?.value ?? '';
+    this.consume();
+    if (this.nextMatches(TokenType.SEMI)) {
+      this.consume();
+    }
+    return new ExpressionNode(string);
+  }
+
+  #handleRoundedString() {
+    this.consume();
+    const string = this.consume()?.value ?? '';
+    this.consume();
+    this.consume();
+    return new ExpressionNode(string, BoxShape.ROUNDED);
+  }
+
+  #handleCircularString() {
+    this.consume();
+    this.consume();
+    const string = this.consume()?.value ?? '';
+    this.consume();
+    this.consume();
+    this.consume();
+    return new ExpressionNode(string, BoxShape.CIRCULAR);
+  }
+
+  #handleParallelogram(reverse = false) {
+    this.consume();
+    const string = this.consume()?.value ?? '';
+    this.consume();
+    this.consume();
+    return new ExpressionNode(string, reverse ? BoxShape.REVERSE_PARALLELOGRAM : BoxShape.PARALLELOGRAM);
+  }
+
+  #handleReturn() {
+    this.consume();
+    this.consume();
+    let scope = 0;
+    while (this.peek() && scope > -1) {
+      const next = this.consume();
+      if (next?.type === TokenType.L_BRACE) {
+        scope++;
+      }
+      if (next?.type === TokenType.R_BRACE) {
+        scope--;
+      }
+    }
+    return new ReturnNode();
   }
 
   #parseIf(): AbstractNode {
