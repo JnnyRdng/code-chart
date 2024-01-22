@@ -171,6 +171,21 @@ describe('Tokeniser tests', () => {
         ]
         expect(actual).toStrictEqual(expected);
       });
+
+      it('can use a reserved keyword if it is in a string', () => {
+        const actual = getTokens(`'else';\n'if';\n'return';\n'while';`);
+        const expected: Token[] = [
+          { type: TokenType.STRING, value: 'else', pos: { pos: 0, len: 6, col: 1, ln: 1 } },
+          { type: TokenType.SEMI, pos: { pos: 6, len: 1, col: 7, ln: 1 } },
+          { type: TokenType.STRING, value: 'if', pos: { pos: 8, len: 4, col: 1, ln: 2 } },
+          { type: TokenType.SEMI, pos: { pos: 12, len: 1, col: 5, ln: 2 } },
+          { type: TokenType.STRING, value: 'return', pos: { pos: 14, len: 8, col: 1, ln: 3 } },
+          { type: TokenType.SEMI, pos: { pos: 22, len: 1, col: 9, ln: 3 } },
+          { type: TokenType.STRING, value: 'while', pos: { pos: 24, len: 7, col: 1, ln: 4 } },
+          { type: TokenType.SEMI, pos: { pos: 31, len: 1, col: 8, ln: 4 } },
+        ]
+        expect(actual).toStrictEqual(expected);
+      });
     });
 
     it('parses a semicolon', () => {
