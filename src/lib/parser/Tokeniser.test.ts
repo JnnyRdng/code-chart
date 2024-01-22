@@ -121,6 +121,36 @@ describe('Tokeniser tests', () => {
 
   describe('Tokenising', () => {
 
+    describe('Reserved Keywords', () => {
+
+      it('can start a string with if without problems', () => {
+        const actual = getTokens('iffiness;');
+        const expected: Token[] = [
+          { type: TokenType.STRING, value: 'iffiness', pos: { pos: 0, len: 8, col: 1, ln: 1 } },
+          { type: TokenType.SEMI, pos: { pos: 8, len: 1, col: 9, ln: 1 } },
+        ]
+        expect(actual).toStrictEqual(expected);
+      });
+
+      it('can start a string with else without problems', () => {
+        const actual = getTokens('elsewhere;');
+        const expected: Token[] = [
+          { type: TokenType.STRING, value: 'elsewhere', pos: { pos: 0, len: 9, col: 1, ln: 1 } },
+          { type: TokenType.SEMI, pos: { pos: 9, len: 1, col: 10, ln: 1 } },
+        ]
+        expect(actual).toStrictEqual(expected);
+      });
+
+      it('can start a string with return without problems', () => {
+        const actual = getTokens('returning;');
+        const expected: Token[] = [
+          { type: TokenType.STRING, value: 'returning', pos: { pos: 0, len: 9, col: 1, ln: 1 } },
+          { type: TokenType.SEMI, pos: { pos: 9, len: 1, col: 10, ln: 1 } },
+        ]
+        expect(actual).toStrictEqual(expected);
+      });
+    });
+
     it('parses a semicolon', () => {
       const input = ';';
       const actual = getTokens(input);
