@@ -3,6 +3,7 @@ import { Token, TokenType } from '../domain/Token';
 import { BoxShape } from '../domain/BoxShape';
 import { AbstractNode, ConditionNode, ExpressionNode, ProgramNode, ReturnNode, resetId } from './Node';
 import { Tokeniser } from './Tokeniser';
+import { LinkGenerator } from './LinkGenerator';
 
 export class NodeParser {
 
@@ -11,7 +12,7 @@ export class NodeParser {
 
   i: number;
   code: string;
-  arrows: string;
+  links: string;
   classDefs: string;
   options: ParserOptions;
 
@@ -21,7 +22,7 @@ export class NodeParser {
     this.tokens = tokeniser.getTokens();
     this.i = 0;
     this.code = '';
-    this.arrows = '';
+    this.links = '';
     this.classDefs = '';
     this.options = {
       trueLabel: options.trueLabel || 'True',
@@ -37,7 +38,12 @@ export class NodeParser {
       this.root.addInstructions(this.#parse());
     }
     this.generate(this.root);
-    this.generateLabels(this.root);
+    const linkGenerator = new LinkGenerator(this.root, {
+      trueLabel: this.options.trueLabel,
+      falseLabel: this.options.falseLabel,
+    });
+    linkGenerator.start()
+    this.links += linkGenerator.text;
     this.addClassDefs();
   }
 
@@ -46,50 +52,7 @@ export class NodeParser {
   }
 
   get mermaid() {
-    return this.code + this.arrows + this.classDefs;
-  }
-
-  generateLabels(root: AbstractNode): number[] {
-    for (const [i, node] of root.instructions.entries()) {
-      if (node instanceof ReturnNode) {
-        continue;
-      }
-      let previous: AbstractNode | undefined;
-      if (i > 0) {
-        previous = root.instructions[i - 1];
-      }
-      if (previous instanceof ExpressionNode) {
-        this.addLabel(previous.id, node.id);
-      } else if (previous instanceof ConditionNode) {
-        const previousIds = previous.getTerminalIds().join(' & ');
-        this.addLabel(previousIds, node.id);
-      }
-      if (node instanceof ConditionNode) {
-        const firstIf = node.ifBlock.instructions[0];
-        this.addLabel(node.id, firstIf.id, this.options.trueLabel);
-        this.generateLabels(node.ifBlock);
-        const firstElse = node.elseBlock.instructions[0];
-        if (firstElse) {
-          this.addLabel(node.id, firstElse.id, this.options.falseLabel);
-          this.generateLabels(node.elseBlock);
-        } else {
-          const nextNode = root.instructions[i + 1];
-          if (nextNode) {
-            this.addLabel(node.ifBlock.getLastInstruction().id, nextNode.id);
-            this.addLabel(node.id, nextNode.id, this.options.falseLabel);
-          }
-        }
-      }
-    }
-    return [];
-  }
-
-  addLabel(from: string | number, to: number, label?: string) {
-    const tag = label === undefined ? '' : `|${label}|`;
-    const arrow = `  ${from}-->${tag}${to}\n`;
-    if (!this.arrows.includes(arrow)) {
-      this.arrows += arrow;
-    }
+    return this.code + this.links + this.classDefs;
   }
 
   generate(node: AbstractNode) {

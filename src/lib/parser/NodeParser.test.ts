@@ -52,7 +52,7 @@ describe('NodeParser tests', () => {
     });
 
     it('should initialise arrows to empty string', () => {
-      expect(parser.arrows).toStrictEqual('');
+      expect(parser.links).toStrictEqual('');
     });
 
     it('should initialise classDefs to empty string', () => {
