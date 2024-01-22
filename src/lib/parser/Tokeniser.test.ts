@@ -117,9 +117,76 @@ describe('Tokeniser tests', () => {
       t.consume();
       expect(() => t.consume()).toThrow('Cannot consume, end of file.');
     });
+
+    it('matches the next char', () => {
+      expect(t.nextIsOneOf('0')).toStrictEqual(true);
+      expect(t.nextIsOneOf('p')).toStrictEqual(false);
+      expect(t.nextIsOneOf('a', 'b', '0')).toStrictEqual(true);
+      t.consume();
+      expect(t.nextIsOneOf('0', '1', '2')).toStrictEqual(true);
+      expect(t.nextIsOneOf('0')).toStrictEqual(false);
+      expect(t.nextIsOneOf('1')).toStrictEqual(true);
+    });
+
+    it('fails to match next when no arguments are given', () => {
+      expect(t.nextIsOneOf()).toStrictEqual(false);
+    });
+
+    it('matches the next char if it is EOF', () => {
+      t.consume();
+      t.consume();
+      t.consume();
+      expect(t.nextIsOneOf()).toStrictEqual(true);
+      expect(t.nextIsOneOf('a', 'b', 'c')).toStrictEqual(true);
+    });
   });
 
   describe('Tokenising', () => {
+
+    describe('Reserved Keywords', () => {
+
+      it('can start a string with if without problems', () => {
+        const actual = getTokens('iffiness;');
+        const expected: Token[] = [
+          { type: TokenType.STRING, value: 'iffiness', pos: { pos: 0, len: 8, col: 1, ln: 1 } },
+          { type: TokenType.SEMI, pos: { pos: 8, len: 1, col: 9, ln: 1 } },
+        ]
+        expect(actual).toStrictEqual(expected);
+      });
+
+      it('can start a string with else without problems', () => {
+        const actual = getTokens('elsewhere;');
+        const expected: Token[] = [
+          { type: TokenType.STRING, value: 'elsewhere', pos: { pos: 0, len: 9, col: 1, ln: 1 } },
+          { type: TokenType.SEMI, pos: { pos: 9, len: 1, col: 10, ln: 1 } },
+        ]
+        expect(actual).toStrictEqual(expected);
+      });
+
+      it('can start a string with return without problems', () => {
+        const actual = getTokens('returning;');
+        const expected: Token[] = [
+          { type: TokenType.STRING, value: 'returning', pos: { pos: 0, len: 9, col: 1, ln: 1 } },
+          { type: TokenType.SEMI, pos: { pos: 9, len: 1, col: 10, ln: 1 } },
+        ]
+        expect(actual).toStrictEqual(expected);
+      });
+
+      it('can use a reserved keyword if it is in a string', () => {
+        const actual = getTokens(`'else';\n'if';\n'return';\n'while';`);
+        const expected: Token[] = [
+          { type: TokenType.STRING, value: 'else', pos: { pos: 0, len: 6, col: 1, ln: 1 } },
+          { type: TokenType.SEMI, pos: { pos: 6, len: 1, col: 7, ln: 1 } },
+          { type: TokenType.STRING, value: 'if', pos: { pos: 8, len: 4, col: 1, ln: 2 } },
+          { type: TokenType.SEMI, pos: { pos: 12, len: 1, col: 5, ln: 2 } },
+          { type: TokenType.STRING, value: 'return', pos: { pos: 14, len: 8, col: 1, ln: 3 } },
+          { type: TokenType.SEMI, pos: { pos: 22, len: 1, col: 9, ln: 3 } },
+          { type: TokenType.STRING, value: 'while', pos: { pos: 24, len: 7, col: 1, ln: 4 } },
+          { type: TokenType.SEMI, pos: { pos: 31, len: 1, col: 8, ln: 4 } },
+        ]
+        expect(actual).toStrictEqual(expected);
+      });
+    });
 
     it('parses a semicolon', () => {
       const input = ';';

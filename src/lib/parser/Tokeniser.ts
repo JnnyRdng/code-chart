@@ -1,4 +1,4 @@
-import { Char } from "./Char";
+import { Char, EOF_CHAR } from "./Char";
 import { CharPos, Token, TokenType } from "../domain/Token";
 import { Buffer } from './Buffer';
 
@@ -110,23 +110,23 @@ export class Tokeniser {
       !(latestTokenIsOpeningBracket && this.peek().equals(matched))
     ) {
       this.buffer.push(this.consume());
-      if (this.buffer.equals('return')) {
+      if (this.buffer.equals('return') && this.nextIsOneOf(';', ' ')) {
         this.tokens.push({ type: TokenType.RETURN, pos: this.#getCharPos(pos, 6) });
         return;
       }
-      if (this.buffer.equals('if')) {
+      if (this.buffer.equals('if') && this.nextIsOneOf(' ', '(')) {
         this.tokens.push({ type: TokenType.IF, pos: this.#getCharPos(pos, 2) });
         return;
       }
-      if (this.buffer.equals('while')) {
+      if (this.buffer.equals('while') && this.nextIsOneOf(' ', '(')) {
         this.tokens.push({ type: TokenType.WHILE, pos: this.#getCharPos(pos, 5) });
         return;
       }
-      if (this.buffer.equals('else')) {
+      if (this.buffer.equals('else') && this.nextIsOneOf(' ', '{')) {
         this.tokens.push({ type: TokenType.ELSE, pos: this.#getCharPos(pos, 4) });
         return;
       }
-      if (this.buffer.equals('switch')) {
+      if (this.buffer.equals('switch') && this.nextIsOneOf(' ', '(')) {
         this.tokens.push({ type: TokenType.SWITCH, pos: this.#getCharPos(pos, 6) });
         return;
       }
@@ -212,6 +212,11 @@ export class Tokeniser {
       return new Char('•');
     }
     return new Char(c);
+  }
+
+  nextIsOneOf(...charValues: string[]) {
+    const next = this.peek();
+    return [EOF_CHAR, ...charValues].includes(next.char);
   }
 
   consume(): Char {
