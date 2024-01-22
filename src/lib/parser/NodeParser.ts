@@ -82,7 +82,6 @@ export class NodeParser {
       }
     }
     return [];
-
   }
 
   addLabel(from: string | number, to: number, label?: string) {
@@ -110,43 +109,15 @@ export class NodeParser {
     const nodes: AbstractNode[] = [];
     while (this.peek()) {
       if (this.nextMatches(TokenType.STRING)) {
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        if (this.nextMatches(TokenType.SEMI)) {
-          this.consume();
-        }
-        const node = new ExpressionNode(string);
-        nodes.push(node);
+        nodes.push(this.#handleSquareString());
       } else if (this.nextMatches(TokenType.L_PAREN, TokenType.STRING, TokenType.R_PAREN, TokenType.SEMI)) {
-        this.consume();
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        this.consume();
-        const node = new ExpressionNode(string, BoxShape.ROUNDED);
-        nodes.push(node);
+        nodes.push(this.#handleRoundedString());
       } else if (this.nextMatches(TokenType.L_PAREN, TokenType.L_PAREN, TokenType.STRING, TokenType.R_PAREN, TokenType.R_PAREN, TokenType.SEMI)) {
-        this.consume();
-        this.consume();
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        this.consume();
-        this.consume();
-        const node = new ExpressionNode(string, BoxShape.CIRCULAR);
-        nodes.push(node);
+        nodes.push(this.#handleCircularString());
       } else if (this.nextMatches(TokenType.FORWARD_SLASH, TokenType.STRING, TokenType.FORWARD_SLASH, TokenType.SEMI)) {
-        this.consume();
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        this.consume();
-        const node = new ExpressionNode(string, BoxShape.PARALLELOGRAM);
-        nodes.push(node);
+        nodes.push(this.#handleParallelogram());
       } else if (this.nextMatches(TokenType.BACKWARD_SLASH, TokenType.STRING, TokenType.BACKWARD_SLASH, TokenType.SEMI)) {
-        this.consume();
-        const string = this.consume()?.value ?? '';
-        this.consume();
-        this.consume();
-        const node = new ExpressionNode(string, BoxShape.REVERSE_PARALLELOGRAM);
-        nodes.push(node);
+        nodes.push(this.#handleParallelogram(true));
       } else if (this.nextMatches(TokenType.R_BRACE)) {
         this.consume();
         return nodes;
@@ -154,19 +125,7 @@ export class NodeParser {
         this.consume();
         nodes.push(this.#parseIf());
       } else if (this.nextMatches(TokenType.RETURN, TokenType.SEMI)) {
-        nodes.push(new ReturnNode());
-        this.consume();
-        this.consume();
-        let scope = 0;
-        while (this.peek() && scope > -1) {
-          const next = this.consume();
-          if (next?.type === TokenType.L_BRACE) {
-            scope++;
-          }
-          if (next?.type === TokenType.R_BRACE) {
-            scope--;
-          }
-        }
+        nodes.push(this.#handleReturn());
         return nodes;
       } else if (this.nextMatches(TokenType.COMMENT)) {
         //TODO: would prefer to do something with comments.
@@ -179,6 +138,57 @@ export class NodeParser {
       }
     }
     return nodes;
+  }
+
+  #handleSquareString() {
+    const string = this.consume()?.value ?? '';
+    this.consume();
+    if (this.nextMatches(TokenType.SEMI)) {
+      this.consume();
+    }
+    return new ExpressionNode(string);
+  }
+
+  #handleRoundedString() {
+    this.consume();
+    const string = this.consume()?.value ?? '';
+    this.consume();
+    this.consume();
+    return new ExpressionNode(string, BoxShape.ROUNDED);
+  }
+
+  #handleCircularString() {
+    this.consume();
+    this.consume();
+    const string = this.consume()?.value ?? '';
+    this.consume();
+    this.consume();
+    this.consume();
+    return new ExpressionNode(string, BoxShape.CIRCULAR);
+  }
+
+  #handleParallelogram(reverse = false) {
+    this.consume();
+    const string = this.consume()?.value ?? '';
+    this.consume();
+    this.consume();
+    return new ExpressionNode(string, reverse ? BoxShape.REVERSE_PARALLELOGRAM : BoxShape.PARALLELOGRAM);
+  }
+
+  #handleReturn() {
+    this.consume();
+    this.consume();
+    let scope = 0;
+    while (this.peek() && scope > -1) {
+      const next = this.consume();
+      if (next?.type === TokenType.L_BRACE) {
+        scope++;
+      }
+      if (next?.type === TokenType.R_BRACE) {
+        scope--;
+      }
+    }
+    return new ReturnNode();
   }
 
   #parseIf(): AbstractNode {
