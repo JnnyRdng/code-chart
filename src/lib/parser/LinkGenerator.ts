@@ -61,7 +61,10 @@ export class LinkGenerator {
     } else {
       const nextNode = root.instructions[i + 1];
       if (nextNode) {
-        this.addLabel(node.ifBlock.getLastInstruction().id, nextNode.id);
+        const lastNodeInIfBlock = node.ifBlock.getLastInstruction();
+        if (!(lastNodeInIfBlock instanceof ReturnNode)) {
+          this.addLabel(lastNodeInIfBlock.id, nextNode.id);
+        }
         this.addLabel(node.id, nextNode.id, this.options.falseLabel);
       }
     }

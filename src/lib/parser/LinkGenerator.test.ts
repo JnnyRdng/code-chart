@@ -134,6 +134,12 @@ describe('LinkGenerator tests', () => {
       expect(generator.text).toStrictEqual(expected);
     });
 
+    it('handles an if block that returns', () => {
+      const generator = getGenerator('if ( true) { one; return; } two; three;');
+      const expected = '  1-->|True|4\n  1-->|False|6\n  6-->7\n';
+      expect(generator.text).toStrictEqual(expected);
+    });
+
     it('uses a custom value for true', () => {
       const generator = getGenerator('if (true) { one; } two;', {
         trueLabel: 'yes',
