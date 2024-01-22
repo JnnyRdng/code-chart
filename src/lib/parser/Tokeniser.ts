@@ -151,9 +151,9 @@ export class Tokeniser {
 
   #handleForwardSlash() {
     if (this.peek(1).equals('/')) {
-      this.consume();
-      this.consume();
       this.#handleComment();
+    } else if (this.peek(1).equals('*')) {
+      this.#handleBlockComment();
     } else {
       this.tokens.push({ type: TokenType.FORWARD_SLASH, pos: this.#getCharPos(this.i, 1) });
       this.consume();
@@ -172,14 +172,37 @@ export class Tokeniser {
   }
 
   #handleComment() {
+    const pos = this.i;
+    this.consume();
+    this.consume();
     while (this.peek().isWhiteSpace()) {
       this.consume();
     }
-    const pos = this.i;
     while (!this.peek().isNewLine() && !this.peek().isEoF()) {
       this.buffer.push(this.consume());
     }
-    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos: this.#getCharPos(pos, this.i - pos) });
+    const tokenLength = this.tokens.length;
+    const lastToken = this.tokens[tokenLength - 1];
+    const charPos = this.#getCharPos(pos, this.i - pos);
+    if (lastToken && lastToken.type === TokenType.COMMENT) {
+      lastToken.value += '\n' + this.buffer.toString();
+      lastToken.pos.len += charPos.len + 1;
+    } else {
+      this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos: charPos });
+    }
+  }
+
+  #handleBlockComment() {
+    const pos = this.i;
+    this.consume();
+    this.consume();
+    while (!this.peek().isEoF() && (!this.peek().equals('*') || !this.peek(1).equals('/'))) {
+      this.buffer.push(this.consume());
+    }
+    // this is probably bad
+    this.consume();
+    this.consume();
+    this.tokens.push({ type: TokenType.COMMENT, value: this.buffer.toString(), pos: this.#getCharPos(pos, this.i - pos) })
   }
 
 

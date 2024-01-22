@@ -474,7 +474,7 @@ describe('Tokeniser tests', () => {
     it('parses a comment from a double // to the end of the line', () => {
       const actual = getTokens('// this is a comment\n this is not');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: 'this is a comment', pos: { pos: 3, len: 17, ln: 1, col: 4 } },
+        { type: TokenType.COMMENT, value: 'this is a comment', pos: { pos: 0, len: 20, ln: 1, col: 1 } },
         { type: TokenType.STRING, value: 'this is not', pos: { pos: 22, len: 11, ln: 2, col: 2 } },
       ]
       expect(actual).toStrictEqual(expected);
@@ -483,7 +483,7 @@ describe('Tokeniser tests', () => {
     it('a comment does not need a space after a //', () => {
       const actual = getTokens('//comment\n');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: 'comment', pos: { pos: 2, len: 7, ln: 1, col: 3 } },
+        { type: TokenType.COMMENT, value: 'comment', pos: { pos: 0, len: 9, ln: 1, col: 1 } },
       ];
       expect(actual).toStrictEqual(expected);
     });
@@ -491,7 +491,7 @@ describe('Tokeniser tests', () => {
     it('a comment at the end of the file should not throw an error', () => {
       const actual = getTokens('//eof');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: 'eof', pos: { pos: 2, len: 3, ln: 1, col: 3 } },
+        { type: TokenType.COMMENT, value: 'eof', pos: { pos: 0, len: 5, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -499,7 +499,7 @@ describe('Tokeniser tests', () => {
     it('an empty comment should be empty', () => {
       const actual = getTokens('//');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: '', pos: { pos: 2, len: 0, ln: 1, col: 3 } },
+        { type: TokenType.COMMENT, value: '', pos: { pos: 0, len: 2, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
@@ -507,9 +507,44 @@ describe('Tokeniser tests', () => {
     it('an empty comment followed by a newline should be empty', () => {
       const actual = getTokens('//\n');
       const expected: Token[] = [
-        { type: TokenType.COMMENT, value: '', pos: { pos: 2, len: 0, ln: 1, col: 3 } },
+        { type: TokenType.COMMENT, value: '', pos: { pos: 0, len: 2, ln: 1, col: 1 } },
       ]
       expect(actual).toStrictEqual(expected);
     });
+
+    it('multiple lines of comments are concatenated', () => {
+      const actual = getTokens('// first comment\n// second comment');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'first comment\nsecond comment', pos: { pos: 0, len: 34, ln: 1, col: 1 } },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('parses block comments', () => {
+      const actual = getTokens('/*comment block!*/');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'comment block!', pos: { pos: 0, len: 18, ln: 1, col: 1 } },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('parses block comments containing an asterisk', () => {
+      const actual = getTokens('/*comment block**/');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'comment block*', pos: { pos: 0, len: 18, ln: 1, col: 1 } },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    it('parses multiline block comments', () => {
+      const actual = getTokens('/*comment\nblock*/');
+      const expected: Token[] = [
+        { type: TokenType.COMMENT, value: 'comment\nblock', pos: { pos: 0, len: 17, ln: 1, col: 1 } },
+      ]
+      expect(actual).toStrictEqual(expected);
+    });
+
+    // TODO: more tests for comments please
+    // such as an unterminated block comment. shouldn't error.
   });
 });

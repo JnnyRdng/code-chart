@@ -42,8 +42,6 @@ interface TokenBase {
   pos: CharPos;
 }
 
-
-
 interface TokenTypeWithValue extends TokenBase {
   type: ValueTokenType;
   value: string;

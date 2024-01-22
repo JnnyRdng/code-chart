@@ -175,37 +175,22 @@ export class NodeParser {
         this.consume();
       } else {
         const token = this.consume();
-        throw new Error(`I don't know what to do with this ${token!.type} at ${token!.pos}`);
+        throw new Error(`I don't know what to do with this ${token!.type} at ${token!.pos.pos}`);
       }
     }
     return nodes;
   }
 
   #parseIf(): AbstractNode {
-    if (this.peekType() !== TokenType.L_PAREN) {
-      throw new Error(`Expected '(' at pos ${this.peek()?.pos}`);
-    }
-    this.consume();
-    if (this.peekType() !== TokenType.STRING) {
-      throw new Error(`Expected string at pos ${this.peek()?.pos}`);
-    }
-    const string = this.consume()?.value ?? '';
-    if (!this.nextMatches(TokenType.R_PAREN)) {
-      throw new Error(`Expected ')' at pos ${this.peek()?.pos}`);
-    }
-    this.consume();
-    if (!this.nextMatches(TokenType.L_BRACE)) {
-      throw new Error(`Expected '{' at pos ${this.peek()?.pos}`);
-    }
-    this.consume();
+    this.consumeIf(TokenType.L_PAREN);
+    const string = this.consumeIf(TokenType.STRING)?.value ?? '';
+    this.consumeIf(TokenType.R_PAREN);
+    this.consumeIf(TokenType.L_BRACE);
     const conditionNode = new ConditionNode(string);
     conditionNode.ifBlock.addInstructions(this.#parse());
     if (this.nextMatches(TokenType.ELSE)) {
       this.consume();
-      if (!this.nextMatches(TokenType.L_BRACE)) {
-        throw new Error(`Expected '{' at pos ${this.peek()?.pos}`);
-      }
-      this.consume();
+      this.consumeIf(TokenType.L_BRACE);
       conditionNode.elseBlock.addInstructions(this.#parse());
     }
     return conditionNode;
