@@ -1,8 +1,9 @@
 import { Tokeniser } from "./Tokeniser";
-import { ExpressionNode, ProgramNode, resetId } from "./Node";
+import { ExpressionNode, ProgramNode, ReturnNode, resetId } from "./Node";
 import { NodeParser } from "./NodeParser";
 import { ParserOptionsArgs } from "../domain/Parser";
 import { TokenType } from "../domain/Token";
+import { BoxShape } from "../domain/BoxShape";
 
 const getParser = (input: string, options: ParserOptionsArgs = {}) => {
   const tokeniser = new Tokeniser(input);
@@ -243,12 +244,51 @@ describe('NodeParser tests', () => {
 
     it('produces a single block diagram', () => {
       const parser = getParser('block;');
-      expect(parser.mermaid).toStrictEqual('flowchart TD;\n  1["block"]\n' + parser.classDefs);
+      expect(parser.mermaid).toStrictEqual('flowchart TD;\n  1["block"]\n');
     });
 
     it('produces a two block diagram with an arrow', () => {
       const parser = getParser('block; block;');
-      expect(parser.mermaid).toStrictEqual('flowchart TD;\n  1["block"]\n  2["block"]\n  1-->2\n' + parser.classDefs);
+      expect(parser.mermaid).toStrictEqual('flowchart TD;\n  1["block"]\n  2["block"]\n  1-->2\n');
+    });
+
+    it('produces rounded nodes', () => {
+      const parser = getParser('(one);');
+      expect(parser.mermaid).toStrictEqual('flowchart TD;\n  1("one")\n');
+      const lastNode = parser.root.getLastInstruction();
+      expect(lastNode).toBeInstanceOf(ExpressionNode);
+      expect((lastNode as ExpressionNode).shape).toStrictEqual(BoxShape.ROUNDED);
+    });
+
+    it('produces circular nodes', () => {
+      const parser = getParser('((one));');
+      expect(parser.mermaid).toStrictEqual('flowchart TD;\n  1(("one"))\n');
+      const lastNode = parser.root.getLastInstruction();
+      expect(lastNode).toBeInstanceOf(ExpressionNode);
+      expect((lastNode as ExpressionNode).shape).toStrictEqual(BoxShape.CIRCULAR);
+    });
+
+    it('produces parallelogram nodes', () => {
+      const parser = getParser('/one/;');
+      expect(parser.mermaid).toStrictEqual('flowchart TD;\n  1[/"one"/]\n');
+      const lastNode = parser.root.getLastInstruction();
+      expect(lastNode).toBeInstanceOf(ExpressionNode);
+      expect((lastNode as ExpressionNode).shape).toStrictEqual(BoxShape.PARALLELOGRAM);
+    });
+
+    it('produces reverse parallelogram nodes', () => {
+      const parser = getParser('\\one\\;');
+      expect(parser.mermaid).toStrictEqual('flowchart TD;\n  1[\\"one"\\]\n');
+      const lastNode = parser.root.getLastInstruction();
+      expect(lastNode).toBeInstanceOf(ExpressionNode);
+      expect((lastNode as ExpressionNode).shape).toStrictEqual(BoxShape.REVERSE_PARALLELOGRAM);
+    });
+
+    it('produces return statement nodes', () => {
+      const parser = getParser('return;');
+      expect(parser.mermaid).toStrictEqual('flowchart TD;\n');
+      const lastNode = parser.root.getLastInstruction();
+      expect(lastNode).toBeInstanceOf(ReturnNode);
     });
   });
 });

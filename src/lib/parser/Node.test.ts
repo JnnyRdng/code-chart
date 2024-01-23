@@ -174,7 +174,7 @@ describe('Node tests', () => {
 
     it('generates a mermaid decision block', () => {
       expect(node.text).toStrictEqual('condition');
-      expect(node.getMermaid()).toStrictEqual('  0{"condition"}:::condition\n');
+      expect(node.getMermaid()).toStrictEqual('  0{"condition"}\n');
     });
 
     it('getTerminalIds() gets the last nodes in the if and else blocks', () => {
