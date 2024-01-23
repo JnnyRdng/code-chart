@@ -1,5 +1,6 @@
-import { BoxShape, boxShapeBracketMap } from "../domain/BoxShape";
+import { BoxShape, boxShapeBracketMap, boxShapeThemeKeys } from "../domain/BoxShape";
 import { FlowchartDirection } from "../domain/Parser";
+import { ThemeKey, getThemeClass } from "../domain/Themes";
 
 
 export const { getId, resetId } = (() => {
@@ -15,6 +16,7 @@ export abstract class AbstractNode {
   readonly id: number;
   readonly text: string;
   readonly instructions: AbstractNode[];
+  theme: ThemeKey = 'none';
 
   constructor(text: string) {
     if (this.constructor === AbstractNode) {
@@ -42,6 +44,10 @@ export abstract class AbstractNode {
   getMermaid(): string {
     throw new Error(`'getMermaid()' not implemented in ${this.constructor}`);
   }
+
+  setTheme(theme: ThemeKey) {
+    this.theme = theme;
+  }
 }
 
 export class ProgramNode extends AbstractNode {
@@ -51,7 +57,18 @@ export class ProgramNode extends AbstractNode {
   }
 
   getMermaid() {
-    return this.text + '\n';
+    const config = {
+      flowchart: {
+        curve: 'bumpY',
+        // defaultRenderer: 'elk'
+      },
+      themeVariables: {
+        lineColor: 'hotpink'
+      }
+    }
+
+    const init = `%%{ init: ${JSON.stringify(config)} }%%\n`
+    return init + this.text + '\n';
   }
 }
 
@@ -65,7 +82,11 @@ export class ExpressionNode extends AbstractNode {
 
   getMermaid(): string {
     const [opening, closing] = this.#getBrackets(this.shape);
-    return `  ${this.id}${opening}"${this.text}"${closing}\n`;
+    return `  ${this.id}${opening}"${this.text}"${closing}${getThemeClass(this.theme, this.#getThemeKey())}\n`;
+  }
+
+  #getThemeKey() {
+    return boxShapeThemeKeys[this.shape];
   }
 
   #getBrackets(shape: BoxShape): [string, string] {
@@ -88,7 +109,7 @@ export class ConditionNode extends AbstractNode {
   }
 
   getMermaid(): string {
-    return `  ${this.id}{"${this.text}"}:::condition\n`;
+    return `  ${this.id}{"${this.text}"}${getThemeClass(this.theme, 'condition')}\n`;
   }
 
   getTerminalIds(): number[] {

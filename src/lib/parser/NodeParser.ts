@@ -1,9 +1,10 @@
 import { ParserOptions, ParserOptionsArgs } from '../domain/Parser';
 import { Token, TokenType } from '../domain/Token';
-import { BoxShape } from '../domain/BoxShape';
+import { BoxShape, boxShapeThemeKeys } from '../domain/BoxShape';
 import { AbstractNode, ConditionNode, ExpressionNode, ProgramNode, ReturnNode, resetId } from './Node';
 import { Tokeniser } from './Tokeniser';
 import { LinkGenerator } from './LinkGenerator';
+import { getThemeValue } from '../domain/Themes';
 
 export class NodeParser {
 
@@ -27,8 +28,8 @@ export class NodeParser {
     this.options = {
       trueLabel: options.trueLabel || 'True',
       falseLabel: options.falseLabel || 'False',
-      flowchartDirection: options.flowchartDirection || 'TD',
-      theme: options.theme ?? false,
+      flowchartDirection: options.flowchartDirection ?? 'TD',
+      theme: options.theme ?? 'none',
     };
     this.root = new ProgramNode(this.options.flowchartDirection);
   }
@@ -48,7 +49,9 @@ export class NodeParser {
   }
 
   addClassDefs() {
-    this.classDefs += '\nclassDef condition fill:#c3516b\n'
+    Object.values(boxShapeThemeKeys).forEach(value => {
+      this.classDefs += getThemeValue(this.options.theme, value);
+    });
   }
 
   get mermaid() {
@@ -56,6 +59,7 @@ export class NodeParser {
   }
 
   generate(node: AbstractNode) {
+    node.setTheme(this.options.theme);
     this.code += node.getMermaid();
     for (const instruction of node.instructions) {
       this.generate(instruction);
@@ -97,7 +101,7 @@ export class NodeParser {
         this.consume();
       } else {
         const token = this.consume();
-        throw new Error(`I don't know what to do with this ${token!.type} at ${token!.pos.pos}`);
+        throw new Error(`Unexpected ${token!.type} at [${token!.pos.ln}:${token!.pos.col}]`);
       }
     }
     return nodes;
