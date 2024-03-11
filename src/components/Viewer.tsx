@@ -7,6 +7,7 @@ import { ErrorWindow } from './ErrorWindow';
 import { NodeParser } from '../lib/parser/NodeParser';
 import { FlowchartDirection } from '../lib/domain/Parser';
 import { CopyToClipboard } from './CopyToClipboard/CopyToClipboard';
+import { Storage } from './Storage';
 
 
 export const Viewer = () => {
@@ -37,6 +38,7 @@ export const Viewer = () => {
     <div className='viewer-window'>
       <CopyToClipboard textToCopy={code} />
       <CopyToClipboard textToCopy={text} buttonText='Copy Mermaid' />
+      <Storage />
       <div>
         <input id='topdown' type='radio' value={'TD'} name='direction' onChange={e => setDirection(e.target.value as FlowchartDirection)} />
         <label htmlFor='topdown'>Top-to-bottom</label>
